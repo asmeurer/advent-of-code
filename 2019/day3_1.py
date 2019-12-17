@@ -1,4 +1,6 @@
 import numpy as np
+import sys
+from numba import njit
 
 def wire(input, shape=(10000, 10000)):
     I = np.zeros(shape)
@@ -31,6 +33,7 @@ def wire(input, shape=(10000, 10000)):
         I[s] = 1
     return I
 
+@njit
 def dist(I1, I2):
     shape = I1.shape
     center = (shape[0]//2, shape[1]//2)
@@ -39,7 +42,7 @@ def dist(I1, I2):
     x, y = np.where(A == 2)
     x -= center[0]
     y -= center[1]
-    m = float('inf')
+    m = sys.maxsize
     for i, j in zip(x, y):
         d = abs(i) + abs(j)
         if abs(i) + abs(j) < m:
