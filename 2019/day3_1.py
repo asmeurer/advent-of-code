@@ -4,7 +4,7 @@ from numba import njit
 
 def wire(input, shape=(10000, 10000)):
     I = np.zeros(shape)
-    o = [shape[0]//2, shape[0]//2]
+    o = [shape[0]//2, shape[1]//2]
     for i in input:
         dir, amount = i[0], i[1:]
         amount = int(amount)
@@ -36,6 +36,7 @@ def wire(input, shape=(10000, 10000)):
 @njit
 def dist(I1, I2):
     shape = I1.shape
+    assert I2.shape == shape
     center = (shape[0]//2, shape[1]//2)
     A = I1 + I2
     A[center] = 0
