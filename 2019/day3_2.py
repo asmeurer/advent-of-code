@@ -50,8 +50,6 @@ def dist(I1, I2):
     A = I1 * I2
     A[center] = 0
     x, y = np.where(A != 0)
-    x -= center[0]
-    y -= center[1]
     m = sys.maxsize
     for i, j in zip(x, y):
         d = I1[i, j] + I2[i, j]
