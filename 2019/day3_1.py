@@ -1,35 +1,35 @@
 import numpy as np
 
- def wire(input, shape=(10000, 10000)):
-     I = np.zeros(shape)
-     o = [shape[0]//2, shape[0]//2]
-     for i in input:
-         dir, amount = i[0], i[1:]
-         amount = int(amount)
-         if dir == 'R':
-             if amount + o[1] >= shape[1]:
-                 raise ValueError(amount, o, dir)
-             s = (o[0], slice(o[1], amount + o[1]))
-             o[1] += amount
-         elif dir == 'L':
-             if o[1] - amount < 0:
-                 raise ValueError(amount, o, dir)
-             s = (o[0], slice(o[1] - amount, o[1] + 1))
-             o[1] -= amount
-         elif dir == 'D':
-             if o[0] + amount >= shape[0]:
-                 raise ValueError(amount, o, dir)
-             s = (slice(o[0], o[0] + amount), o[1])
-             o[0] += amount
-         elif dir == 'U':
-             if o[0] - amount < 0:
-                 raise ValueError(amount, o, dir)
-             s = (slice(o[0] - amount, o[0] + 1), o[1])
-             o[0] -= amount
-         else:
-             raise ValueError(dir)
-         I[s] = 1
-     return I
+def wire(input, shape=(10000, 10000)):
+    I = np.zeros(shape)
+    o = [shape[0]//2, shape[0]//2]
+    for i in input:
+        dir, amount = i[0], i[1:]
+        amount = int(amount)
+        if dir == 'R':
+            if amount + o[1] >= shape[1]:
+                raise ValueError(amount, o, dir)
+            s = (o[0], slice(o[1], amount + o[1]))
+            o[1] += amount
+        elif dir == 'L':
+            if o[1] - amount < 0:
+                raise ValueError(amount, o, dir)
+            s = (o[0], slice(o[1] - amount, o[1] + 1))
+            o[1] -= amount
+        elif dir == 'D':
+            if o[0] + amount >= shape[0]:
+                raise ValueError(amount, o, dir)
+            s = (slice(o[0], o[0] + amount), o[1])
+            o[0] += amount
+        elif dir == 'U':
+            if o[0] - amount < 0:
+                raise ValueError(amount, o, dir)
+            s = (slice(o[0] - amount, o[0] + 1), o[1])
+            o[0] -= amount
+        else:
+            raise ValueError(dir)
+        I[s] = 1
+    return I
 
 def dist(I1, I2):
     shape = I1.shape
