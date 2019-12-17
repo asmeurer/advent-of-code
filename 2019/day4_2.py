@@ -19,6 +19,9 @@ def has_double(n):
     l = str(n)
     for i in range(len(l) - 1):
         if l[i] == l[i + 1]:
+            if (i > 0 and l[i-1] == l[i]
+                or i < len(l) - 2 and l[i + 1] == l[i + 2]):
+                continue
             return True
     return False
 
