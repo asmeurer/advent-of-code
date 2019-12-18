@@ -26,6 +26,22 @@ def prog(l, in_):
             out = args[0]
             print(out)
             i += 2
+        elif instr == '05':
+            if args[0] != 0:
+                res[res[i]] = args[1]
+            else:
+                i += 3
+        elif instr == '06':
+            if args[0] == 0:
+                res[res[i]] = args[1]
+            else:
+                i += 3
+        elif instr == '07':
+            res[res[i + 3]] = int(args[0] < args[1])
+            i += 4
+        elif instr == '08':
+            res[res[i + 3]] = int(args[0] == args[1])
+            i += 4
         else:
             raise ValueError(i)
 
