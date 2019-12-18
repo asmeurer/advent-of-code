@@ -8,23 +8,21 @@ def prog(l, in_):
             break
 
         args = []
-        for j, m in enumerate(modes[:-1]):
+        for j, m in enumerate(modes):
             args.append(res[res[i + j + 1]] if m[0] == '0' else res[i + j + 1])
+        assert len(args) == n_args[instr]
+
         if instr == '01':
-            assert len(args) == 2
             res[res[i+3]] = args[0] + args[1]
             i += 4
         elif instr == '02':
-            assert len(args) == 2
             res[res[i+3]] = args[0] * args[1]
             i += 4
         elif instr == '03':
-            assert len(args) == 1
             assert modes[0] == '0'
             res[res[i + 1]] = in_.pop(0)
             i += 2
         elif instr == '04':
-            assert len(args) == 1
             out = args[0]
             print(out)
             i += 2
@@ -33,17 +31,29 @@ def prog(l, in_):
 
     return out
 
+n_args = {
+    "01": 3,
+    "02": 3,
+    "03": 1,
+    "04": 1,
+    "05": 2,
+    "06": 2,
+    "07": 3,
+    "08": 3,
+    '99': 0
+}
+
+write_instrs = ['01', '02', '07', '08']
+
 def split_op(op):
     op = '00000' + str(op)
     instr = op[-2:]
     modes = op[:-2][::-1]
-    if instr in ['01', '02']:
-        modes = modes[:3]
-    else:
-        modes = modes[:2]
+    modes = modes[:n_args[instr]]
 
     assert all(i in '01' for i in modes)
-    assert modes[-1] != '1'
+    if instr in write_instrs:
+        assert modes[-1] != '1'
 
     return instr, modes
 
