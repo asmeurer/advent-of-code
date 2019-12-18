@@ -28,12 +28,12 @@ def prog(l, in_):
             i += 2
         elif instr == '05':
             if args[0] != 0:
-                res[res[i]] = args[1]
+                i = args[1]
             else:
                 i += 3
         elif instr == '06':
             if args[0] == 0:
-                res[res[i]] = args[1]
+                i = args[1]
             else:
                 i += 3
         elif instr == '07':
@@ -130,3 +130,6 @@ if __name__ == '__main__':
     prog(test7, [8])
     print("Should output 1001")
     prog(test7, [9])
+
+    print("Part 2 final problem")
+    prog(input, [5])
