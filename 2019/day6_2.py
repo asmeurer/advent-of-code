@@ -1,19 +1,22 @@
-def create_graph(input):
-    g = {}
-    for line in input.strip().splitlines():
-        a, b = line.split(')')
-        g[b] = a
-    return g
+from day6_1 import input, create_graph, length
 
-def length(g, i):
+def jumps(g):
+    you_len = length(g, 'YOU')
+    san_len = length(g, 'SAN')
+    you_planet = g['YOU']
+    san_planet = g['SAN']
     N = 0
-    while i != 'COM':
-        i = g[i]
+    while True:
+        if you_planet == san_planet:
+            break
+        if you_len > san_len:
+            you_planet = g[you_planet]
+            you_len -= 1
+        else:
+            san_planet = g[san_planet]
+            san_len -= 1
         N += 1
     return N
-
-def count(g):
-    return sum([length(g, i) for i in g])
 
 test_input = """
 COM)B
@@ -27,16 +30,15 @@ D)I
 E)J
 J)K
 K)L
+K)YOU
+I)SAN
 """
-
-with open('day6-input') as f:
-    input = f.read()
 
 if __name__ == '__main__':
     print("Test input")
     test_G = create_graph(test_input)
-    print(count(test_G))
+    print(jumps(test_G))
 
     print("Part 1")
     G = create_graph(input)
-    print(count(G))
+    print(jumps(G))
