@@ -1,4 +1,4 @@
-def prog(l, in_):
+def prog(l, in_, print_out=True):
     res = list(map(int, l.split(',')))
     out = None
     i = 0
@@ -24,7 +24,8 @@ def prog(l, in_):
             i += 2
         elif instr == '04':
             out = args[0]
-            print(out)
+            if print_out:
+                print(out)
             i += 2
         elif instr == '05':
             if args[0] != 0:
