@@ -2,28 +2,37 @@ from day7_1 import input
 
 from itertools import permutations
 
-def compute_amplitude(progs):
+def compute_amplitude(progs, print_=False):
     in_ = 0
-    try:
-        while True:
-            for p in progs:
-                in_ = p.send(in_)
-                next(p)
-    except StopIteration:
-        return in_
+
+    stop = False
+    while not stop:
+        for p in progs:
+            in_ = p.send(in_)
+            if print_:
+                print(in_)
+            try:
+                _ = next(p)
+                assert _ is None
+            except StopIteration:
+                stop = True
+    return in_
 
 def try_permutations(input):
     A = []
     for perm in permutations(range(5, 10)):
+        print_ = False
+        # if perm == (9, 8, 7, 6, 5):
+        #     print_ = True
         progs = [prog(input) for i in perm]
         for p, i in zip(progs, perm):
             next(p)
             p.send(i)
-        A.append((compute_amplitude(progs), perm))
+        A.append((compute_amplitude(progs, print_=print_), perm))
 
     return max(A)
 
-def prog(l, print_out=True):
+def prog(l):
     res = list(map(int, l.split(',')))
     out = None
     i = 0
@@ -49,8 +58,7 @@ def prog(l, print_out=True):
             i += 2
         elif instr == '04':
             out = args[0]
-            if print_out:
-                yield out
+            yield out
             i += 2
         elif instr == '05':
             if args[0] != 0:
@@ -80,7 +88,7 @@ n_args = {
     "06": 2,
     "07": 3,
     "08": 3,
-    '99': 0
+    "99": 0
 }
 
 write_instrs = ['01', '02', '07', '08']
