@@ -1,10 +1,10 @@
 import numpy as np
 
-def split_layers(data, rows, columns):
+def split_layers(data, columns, rows):
     layers = len(data)//rows//columns
     a = np.array(list(map(int, data)))
 
-    return a.reshape((layers, columns, rows))
+    return a.reshape((layers, rows, columns))
 
 
 def find_solution(a):
@@ -23,4 +23,4 @@ with open('day8-input') as f:
     input = f.read()
 
 if __name__ == '__main__':
-    print(find_solution(split_layers(input, 25, 6)))
+    print(find_solution(split_layers(input, 6, 25)))
