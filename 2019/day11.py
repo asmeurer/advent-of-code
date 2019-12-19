@@ -119,6 +119,7 @@ def print_block(A, X, dir):
                 S += white
         S += '\n'
     print(S)
+    # print('---------')
 
 def inc(o, dir, X):
     R = np.array([[0, -1], [1, 0]]) # Rotation matrix for 90 degrees counterclockwise
