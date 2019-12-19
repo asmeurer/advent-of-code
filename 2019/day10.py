@@ -34,7 +34,7 @@ def find_reachable(A):
             points = zip(_range(i[0], j[0], den), _range(i[1], j[1], num))
             next(points) # First point is one of i or j
             for x, y in points:
-                if A[x, y] == b'#':
+                if A[x, y] != b'.':
                     break
             else:
                 reachable[i].append(j)
@@ -55,6 +55,25 @@ def print_reachable(reachable, shape):
 
 def best(reachable):
     return max(reachable, key=lambda x: len(reachable[x]))
+
+def get_angle(X):
+    def angle(i):
+        x, y = i[0] - X[0], i[1] - X[1]
+        if x == 0:
+            return 0 # instead of 2*pi
+        return np.arctan2(-x, y) + np.pi
+    return angle
+
+def lasored_order(A, X):
+    A = A.copy()
+    angle = get_angle(X)
+    while True:
+        reachable = find_reachable(A)
+        if not reachable:
+            break
+        for coord in sorted(reachable[X], key=angle):
+            A[coord] = b'.'
+            yield coord
 
 ans = []
 test_inputs = []
@@ -134,6 +153,14 @@ test_inputs.append("""
 ###.##.####.##.#..##
 """)
 
+angle_test = """
+.#....#####...#..
+##...##.#####..##
+##...#...#.#####.
+..#.....X...###..
+..#.#.....#....##
+"""
+
 ans.append("Day 10 part 1")
 input = """
 #..#.#.#.######..#.#...##
@@ -162,6 +189,7 @@ input = """
 .##..#####....#####.#.#.#
 #..#..#..##...#..#.#.#.##
 """
+
 if __name__ == '__main__':
     for a, I in zip(ans, test_inputs + [input]):
         print(a)
@@ -171,3 +199,36 @@ if __name__ == '__main__':
         b = best(reachable)
         print("Max", b, "with", len(reachable[b]), "reachable")
         print()
+
+    A = parse(angle_test)
+    reachable = find_reachable(A)
+    X = np.where(A == b'X')
+    X = X[0][0], X[1][0]
+    print("Order for angle test input")
+    print(sorted(reachable[X], key=get_angle(X)))
+    print()
+
+    large_input = test_inputs[-1]
+    A = parse(large_input)
+    reachable = find_reachable(A)
+    X = best(reachable)
+    print("Test Lasor")
+    for i, coord in enumerate(lasored_order(A, X), 1):
+        print("%s: %s" % (i, coord), end=' ')
+        if i == 200:
+            i200 = coord
+    print()
+    print("200th was", i200)
+    print()
+
+    A = parse(input)
+    reachable = find_reachable(A)
+    X = best(reachable)
+    print("Day 10 part 1 Lasor")
+    for i, coord in enumerate(lasored_order(A, X), 1):
+        print("%s: %s" % (i, coord), end=' ')
+        if i == 200:
+            i200 = coord
+    print()
+    print("200th was", i200)
+    print(100*i200[0] + i200[1])
