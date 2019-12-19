@@ -102,19 +102,21 @@ def print_block(A, X, dir):
         (0, 1): '^',
         (0, -1): 'v',
     }
+    S = ""
     for y in range(A.shape[0] - 1, -1, -1):
         for x in range(A.shape[1]):
             entry = A[x, y]
             if (x, y) == tuple(X):
                 if entry in [0, 1]:
-                    print(inverse(dirchar[tuple(dir)]), end='')
+                    S += inverse(dirchar[tuple(dir)])
                 else:
-                    print(dirchar[tuple(dir)], end='')
+                    S += dirchar[tuple(dir)]
             elif entry in [0, 1]:
-                print(black, end='')
+                S += black
             else:
-                print(white, end='')
-        print()
+                S += white
+        S += '\n'
+    print(S)
 
 def inc(o, dir, X):
     R = np.array([[0, -1], [1, 0]]) # Rotation matrix for 90 degrees counterclockwise
