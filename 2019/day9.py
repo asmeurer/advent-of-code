@@ -135,3 +135,6 @@ if __name__ == '__main__':
 
     print("Day 9 part 1")
     print(compute_prog(prog(input), [1]))
+
+    print("Day 9 part 2")
+    print(compute_prog(prog(input), [2]))
