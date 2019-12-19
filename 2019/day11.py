@@ -89,8 +89,8 @@ def compute_prog(input, shape=(10, 10), p=None):
                 return A
             A[tuple(X)] = 1 if color == 0 else -1
             inc(dir_change, dir, X)
-            from time import sleep
-            sleep(1)
+            # from time import sleep
+            # sleep(1)
             print()
         except StopIteration:
             return A
