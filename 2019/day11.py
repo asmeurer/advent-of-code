@@ -10,8 +10,11 @@ def prog(l, in_):
     out = None
     i = 0 # instruction counter
     r = 0 # relative base
+    iterations = 0
 
     while True:
+        iterations += 1
+        # print("Iteration:", iterations)
         instr, modes = split_op(res[i])
         if instr == '99': # Halt
             break
