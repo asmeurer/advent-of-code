@@ -99,7 +99,7 @@ n_args = {
     "99": 0,
 }
 
-write_instrs = ['01', '02', '07', '08']
+write_instrs = ['01', '02', '03', '07', '08']
 
 def split_op(op):
     op = '00000' + str(op)
