@@ -43,7 +43,7 @@ def prog(l, in_):
             res[addr] = args[0] * args[1]
             i += 4
         elif instr == '03': # Input
-            res[addr] = yield from in_
+            res[addr] = in_.pop(0)
             i += 2
         elif instr == '04': # Output
             out = args[0]
