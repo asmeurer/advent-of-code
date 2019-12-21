@@ -3,8 +3,8 @@ from collections import defaultdict
 
 import numpy as np
 
-from day8 import black, white, inverse
-from day9 import split_op, n_args, write_instrs
+from day08 import black, white, inverse
+from day09 import split_op, n_args, write_instrs
 
 def prog(l, in_):
     res = defaultdict(int, enumerate(map(int, l.split(','))))

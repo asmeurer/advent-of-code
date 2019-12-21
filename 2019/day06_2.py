@@ -1,4 +1,4 @@
-from day6_1 import input, create_graph, length
+from day06_1 import input, create_graph, length
 
 def jumps(g):
     you_len = length(g, 'YOU')

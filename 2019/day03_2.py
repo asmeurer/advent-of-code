@@ -3,7 +3,7 @@ import sys
 from numba import njit
 import numpy as np
 
-from day3_1 import input1, input2
+from day03_1 import input1, input2
 
 def wire(input, shape=(10000, 10000)):
     I = np.zeros(shape, dtype=np.int64)

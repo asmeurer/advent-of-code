@@ -1,4 +1,4 @@
-from day2_1 import prog, input
+from day02_1 import prog, input
 
 if __name__ == '__main__':
     def test():

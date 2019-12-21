@@ -1,4 +1,4 @@
-from day7_1 import input
+from day07_1 import input
 
 from itertools import permutations
 

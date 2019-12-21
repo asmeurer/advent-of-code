@@ -29,7 +29,7 @@ J)K
 K)L
 """
 
-with open('day6-input') as f:
+with open('day06-input') as f:
     input = f.read()
 
 if __name__ == '__main__':
