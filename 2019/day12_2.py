@@ -1,7 +1,8 @@
 from itertools import combinations
 
 import numpy as np
-from numba import njit
+from numba import njit, prange
+from sympy import ilcm
 
 combos = np.array(list(combinations(range(4), 2)))
 
@@ -11,29 +12,42 @@ def step(P, V):
     for c in range(combos.shape[0]):
         i, j = combos[c][0], combos[c][1]
         # Apply gravity
-        for coord in range(3):
-            if P[i][coord] < P[j][coord]:
-                delta[i][coord] += 1
-                delta[j][coord] -= 1
-            elif P[i][coord] > P[j][coord]:
-                delta[i][coord] -= 1
-                delta[j][coord] += 1
+        if P[i] < P[j]:
+            delta[i] += 1
+            delta[j] -= 1
+        elif P[i] > P[j]:
+            delta[i] -= 1
+            delta[j] += 1
 
     V = V + delta
     P = P + V
     return P, V
 
-@njit
-def run_steps(P, n, print_=False):
-    V = np.zeros(P.shape, dtype=np.int64)
-    for i in range(n):
-        P, V = step(P, V)
-        # if print_:
-        #     print("Iteration", i)
-        #     print("Positions\n", P)
-        #     print("Velocities\n", V)
-        #     print()
-    return P, V
+@njit()
+def run_steps(Px, Py, Pz):
+    Vx = np.zeros(Px.shape, dtype=np.int64)
+    Vy = np.zeros(Py.shape, dtype=np.int64)
+    Vz = np.zeros(Pz.shape, dtype=np.int64)
+    first_Px = Px.copy()
+    first_Py = Py.copy()
+    first_Pz = Pz.copy()
+    repeatx = repeaty = repeatz = n = 0
+    while repeatx == 0 or repeaty == 0 or repeatz == 0:
+        for coord in range(3):
+            if coord == 0 and repeatx == 0:
+                Px, Vx = step(Px, Vx)
+                if np.all(Px == first_Px) and np.all(Vx == 0):
+                    repeatx = n
+            elif coord == 1 and repeaty == 0:
+                Py, Vy = step(Py, Vy)
+                if np.all(Py == first_Py) and np.all(Vy == 0):
+                    repeaty = n
+            elif coord == 2 and repeatz == 0:
+                Pz, Vz = step(Pz, Vz)
+                if np.all(Pz == first_Pz) and np.all(Vz == 0):
+                    repeatz = n
+        n += 1
+    return (repeatx, repeaty, repeatz)
 
 def parse_input(I):
     I = I.strip().splitlines()
@@ -44,10 +58,6 @@ def parse_input(I):
         P[i] = coords
 
     return P
-
-# @njit
-def compute_energy(P, V):
-    return np.sum(np.sum(abs(P), axis=1)*np.sum(abs(V), axis=1))
 
 test_input1 = """
 <x=-1, y=0, z=2>
@@ -71,17 +81,20 @@ input = """
 """
 
 if __name__ == '__main__':
-    print("Day 12, part, test 1")
+    print("Day 12, part 2, test 1")
     P = parse_input(test_input1)
-    P, V = run_steps(P, 10, print_=True)
-    print(compute_energy(P, V))
+    repeatx, repeaty, repeatz = run_steps(P[:, 0], P[:, 1], P[:, 2])
+    print(repeatx, repeaty, repeatz)
+    print(ilcm(repeatx+1, repeaty+1, repeatz+1))
 
-    print("Day 12, part 1, test 2")
+    print("Day 12, part 2, test 2")
     P = parse_input(test_input2)
-    P, V = run_steps(P, 100, print_=True)
-    print(compute_energy(P, V))
+    repeatx, repeaty, repeatz = run_steps(P[:, 0], P[:, 1], P[:, 2])
+    print(repeatx, repeaty, repeatz)
+    print(ilcm(repeatx+1, repeaty+1, repeatz+1))
 
-    print("Day 12, part 1")
+    print("Day 12, part 2")
     P = parse_input(input)
-    P, V = run_steps(P, 1000)
-    print(compute_energy(P, V))
+    repeatx, repeaty, repeatz = run_steps(P[:, 0], P[:, 1], P[:, 2])
+    print(repeatx, repeaty, repeatz)
+    print(ilcm(repeatx+1, repeaty+1, repeatz+1))
