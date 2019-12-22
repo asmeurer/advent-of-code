@@ -1,3 +1,4 @@
+import sys
 from collections import defaultdict
 
 import numpy as np
@@ -71,20 +72,42 @@ def prog(l, in_):
         else:
             raise ValueError("bad instruction %s" % i)
 
-def compute_prog(input, p=None, start=0):
-    in_ = []
+def compute_prog(input, p=None):
+    in_ = [0, 0]
     p = p or prog(input, in_)
     A = defaultdict(int)
     A[0, 0] # Initialize
+    score = 0
+    paddle = ball0 = ball1 = -1
     while True:
         try:
-            print_game(A)
+            # print_game(A, score)
             x = next(p)
             y = next(p)
             tile_id = next(p)
-            A[x, y] = tile_id
+            if x == -1:
+                score = tile_id
+            else:
+                A[x, y] = tile_id
+            if tile_id == 3: # Paddle
+                paddle = x
+            if tile_id == 4: # Ball
+                ball0, ball1 = ball1, x
+            if not in_ and tile_id == 4:
+                if paddle > ball1:
+                    in_.append(-1)
+                elif paddle < ball1:
+                    in_.append(1)
+                else:
+                    in_.append(0)
+                print_game(A, score)
+                print("Paddle at", paddle)
+                print("Ball moving from", ball0, "to", ball1)
+                print("Sending input", in_[0])
         except StopIteration:
-            return A
+            print("Game Over")
+            print_game(A, score)
+            return A, score
 
 empty = white
 wall = black
@@ -107,19 +130,34 @@ def toarray(A):
         B[x, y] = A[x, y]
     return B
 
-def print_game(A):
+def print_game(A, score):
     B = toarray(A)
+    print("Score:", score)
+    # paddle = None
     S = ''
     for y in range(B.shape[1]):
         for x in range(B.shape[0]):
             S += D[B[x, y]]
+            # if B[x, y] == 3:
+            #     paddle = x, y
         S += '\n'
     print(S)
+    # print("Paddle was at", paddle)
+    import time
+    time.sleep(0.1)
     print()
 
 with open('day13-input') as f:
     input = f.read()
 
 if __name__ == '__main__':
-    A = compute_prog(input)
-    print(np.sum(toarray(A) == 2))
+    if sys.argv[1:] == ['1']:
+        print("Day 13 Part 1")
+        A, score = compute_prog(input)
+        print(np.sum(toarray(A) == 2))
+    elif sys.argv[1:] == ['2']:
+        print("Day 13 Part 2")
+        input = '2' + input[1:]
+        A = compute_prog(input)
+    else:
+        sys.exit("Error: must run 'python day13.py 1' or 'python day13.py 2'.")
