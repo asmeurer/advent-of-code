@@ -1,5 +1,6 @@
 import sys
 from collections import defaultdict
+import random
 
 import numpy as np
 
@@ -73,12 +74,13 @@ def prog(l, in_):
             raise ValueError("bad instruction %s" % i)
 
 def compute_prog(input, p=None):
-    in_ = [0, 0]
+    in_ = []
     p = p or prog(input, in_)
     A = defaultdict(int)
     A[0, 0] # Initialize
     score = 0
-    paddle = ball0 = ball1 = -1
+    paddlex = paddley = ballx0 = ballx1 = bally = -1
+    moves = 0
     while True:
         try:
             # print_game(A, score)
@@ -90,22 +92,33 @@ def compute_prog(input, p=None):
             else:
                 A[x, y] = tile_id
             if tile_id == 3: # Paddle
-                paddle = x
+                paddlex = x
+                paddley = y
             if tile_id == 4: # Ball
-                ball0, ball1 = ball1, x
+                ballx0, ballx1 = ballx1, x
+                bally = y
             if not in_ and tile_id == 4:
-                if paddle > ball1:
+                moves += 1
+                if paddlex > ballx1:
                     in_.append(-1)
-                elif paddle < ball1:
+                elif paddlex < ballx1:
                     in_.append(1)
+                # elif ballx1 > ballx0:
+                #     in_.append(1)
+                # elif ballx1 < ballx0:
+                #     in_.append(-1)
+                elif bally == paddley - 1:
+                    in_.append(random.choice([-1, 0, 1]))
+                    print("Random")
                 else:
                     in_.append(0)
-                print_game(A, score)
-                print("Paddle at", paddle)
-                print("Ball moving from", ball0, "to", ball1)
+                print("Paddle at", paddlex, paddley)
+                print("Ball was at", ballx0)
+                print("Ball at", ballx1, bally)
                 print("Sending input", in_[0])
+                print_game(A, score)
         except StopIteration:
-            print("Game Over")
+            print("Game Over in", moves, "moves")
             print_game(A, score)
             return A, score
 
@@ -145,7 +158,6 @@ def print_game(A, score):
     # print("Paddle was at", paddle)
     import time
     time.sleep(0.1)
-    print()
 
 with open('day13-input') as f:
     input = f.read()
