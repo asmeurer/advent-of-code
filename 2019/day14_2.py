@@ -1,12 +1,38 @@
 from collections import defaultdict
 
-from day14_1 import (parse_input, FUEL, ORE, produce as _produce, test_input_3,
+from sympy import Add, Symbol
+
+from day14_1 import (parse_input, FUEL, ORE, test_input_3,
                      test_input_4, test_input_5, input)
 
+
+def _produce(out, rxns, available):
+    lhs, rhs = rxns[out]
+
+    for coeff, material in lhs:
+        if material == "ORE":
+            available["ORE"] += coeff
+        else:
+            while available[material] < coeff:
+                _produce(material, rxns, available)
+            available[material] -= coeff
+    available[out] += rhs[0]
+
 def produce(out, rxns, available):
-    available = available.copy()
-    _produce(out, rxns, available)
-    return available
+    available = defaultdict(int, {k.name: v for k, v in available.items()})
+    _rxns = {}
+    for o in rxns:
+        eq = rxns[o]
+        lhs = []
+        for term in Add.make_args(eq.lhs):
+            coeff, material = term.as_coeff_Mul()
+            lhs.append((int(coeff), material.name))
+        coeff, material = eq.rhs.as_coeff_Mul()
+        rhs = (int(coeff), material.name)
+        _rxns[o.name] = (lhs, rhs)
+
+    _produce(out.name, _rxns, available)
+    return defaultdict(int, {Symbol(k): v for k, v in available.items()})
 
 def get_fuel_for_ore(rxns, ore):
     available = defaultdict(int)
@@ -43,7 +69,8 @@ def find_base_multiple(available, rxns):
         else:
             break
         available = produce(FUEL, rxns, available)
-        print(available[FUEL])
+        if available[FUEL] % 1000 == 0:
+            print(available[FUEL])
     return available
 
 def double(available):
