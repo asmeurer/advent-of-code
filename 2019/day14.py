@@ -20,10 +20,15 @@ def parse_input(I):
 
     return rxns
 
-def get_ore_amount(rxns):
-    available = defaultdict(int)
-    produce(FUEL, rxns, available)
+
+def get_ore_amount(rxns, out=FUEL):
+    available = get_avaiable(rxns, out)
     return available[ORE]
+
+def get_avaiable(rxns, out):
+    available = defaultdict(int)
+    produce(out, rxns, available)
+    return available
 
 def produce(out, rxns, available):
     eq = rxns[out]
