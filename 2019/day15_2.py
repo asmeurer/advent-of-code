@@ -5,7 +5,7 @@ import numpy as np
 
 from day13 import prog
 
-from day15_1 import moves, print_board, input, create_tree
+from day15_1 import moves, print_board, input
 
 def run(input, p=None, max_iter=sys.maxsize, print_=False):
     in_ = []
@@ -53,6 +53,39 @@ def run(input, p=None, max_iter=sys.maxsize, print_=False):
     raise RuntimeError("Did not find a solution")
 
 
+def create_tree(A, start):
+    B = defaultdict(lambda: -2)
+    i = 0
+    B[start] = i
+    changed = True
+    while changed:
+        i += 1
+        changed = False
+        for pos in A:
+            if pos in A and A[pos] in [-1, 2]:
+                for move in moves.values():
+                    pos2 = tuple(np.array(pos) + move)
+                    if B[pos2] == i - 1 and B[pos] == -2:
+                        changed = True
+                        B[pos] = i
+        print_fill(B)
+    return max(B.values())
+
+def print_fill(B):
+    min_x = min(list(B), key=lambda i: i[0])[0]
+    max_x = max(list(B), key=lambda i: i[0])[0]
+    min_y = min(list(B), key=lambda i: i[1])[1]
+    max_y = max(list(B), key=lambda i: i[1])[1]
+    S = ''
+    for y in range(min_y, max_y + 1):
+        for x in range(min_x, max_x + 1):
+            S += "%3d|" % B[x, y]
+        S += '\n'
+    S += '----------------------------------------------------------------------------------'
+    print(S)
+    import time
+    time.sleep(0.01)
+
 def bfs(tree, path):
     for item in tree[path[-1]]:
         yield from bfs(tree, path + [item])
@@ -62,9 +95,7 @@ def main():
     A, pos = run(input, print_=False)
     print_board(A, pos)
     oxygen = [i for i in A if A[i] == 2][0]
-    tree = create_tree(A, oxygen)
-    for i in bfs(tree, [oxygen]):
-        print(i)
+    print(create_tree(A, oxygen))
 
 if __name__ == '__main__':
     main()
