@@ -71,7 +71,7 @@ moves = {
 
 bot = '🤖'
 oxygen = 'O₂'
-start = '🏁'
+start = 'ⓧ '
 
 D = {
     -2: start,   # Start
@@ -109,9 +109,43 @@ def retry(input):
         except RuntimeError:
             pass
 
+def create_tree(A):
+    tree = defaultdict(set)
+    # Make sure (0, 0) is included as the base
+    add_to_tree(A, tree, (0, 0))
+
+    for pos in A:
+        add_to_tree(A, tree, pos)
+
+    return tree
+
+def add_to_tree(A, tree, pos):
+    for move in moves.values():
+        pos2 = tuple(np.array(pos) + move)
+        if pos2 in A and A[pos2] in [-1, 2] and pos not in tree[pos2]:
+            tree[pos].add(pos2)
+
+def dfs(tree, path):
+    for item in tree[path[-1]]:
+        yield path + [item]
+        yield from dfs(tree, path + [item])
+
 with open('day15-input') as f:
     input = f.read()
 
-if __name__ == '__main__':
+def main():
     A, pos = retry(input)
     print_board(A, pos)
+    tree = create_tree(A)
+    oxygen = [i for i in A if A[i] == 2][0]
+    for path in dfs(tree, [(0, 0)]):
+        if path[-1] == oxygen:
+            # print(path)
+            print(len(path) - 1, "moves")
+            break
+    else:
+        print("Error: couldn't find path")
+
+
+if __name__ == '__main__':
+    main()
