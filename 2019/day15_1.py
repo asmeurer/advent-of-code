@@ -94,10 +94,10 @@ def print_board(A, pos):
             else:
                 S += D[A[x, y]]
         S += '\n'
+    S += '----------------------------------------------------------------------------------'
     print(S)
-    print('-------------------')
-    # import time
-    # time.sleep(0.1)
+    import time
+    time.sleep(0.01)
 
 def retry(input):
     for r in luby():
@@ -122,8 +122,12 @@ def create_tree(A, start=(0, 0)):
 def add_to_tree(A, tree, pos):
     for move in moves.values():
         pos2 = tuple(np.array(pos) + move)
-        if pos2 in A and A[pos2] in [-1, 2] and pos not in tree[pos2]:
-            tree[pos].add(pos2)
+        if pos2 in A and A[pos2] in [-1, 2]:
+            if pos not in tree[pos2]:
+                tree[pos].add(pos2)
+            else:
+                if pos in A and A[pos] in [-1, 2]:
+                    tree[pos2].add(pos)
 
 def dfs(tree, path):
     for item in tree[path[-1]]:
