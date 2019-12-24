@@ -109,10 +109,10 @@ def retry(input):
         except RuntimeError:
             pass
 
-def create_tree(A):
+def create_tree(A, start=(0, 0)):
     tree = defaultdict(set)
     # Make sure (0, 0) is included as the base
-    add_to_tree(A, tree, (0, 0))
+    add_to_tree(A, tree, start)
 
     for pos in A:
         add_to_tree(A, tree, pos)
