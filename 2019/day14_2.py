@@ -70,7 +70,9 @@ def find_base_multiple(available, rxns):
             break
         available = produce(FUEL, rxns, available)
         if available[FUEL] % 1000 == 0:
-            print(available[FUEL])
+            print("%s (%s/%s)" % (available[FUEL], available[ORE], TRILLION))
+        if available[ORE] > TRILLION:
+            raise RuntimeError("Surpassed a trillion at %s" % available[FUEL])
     return available
 
 def double(available):
@@ -90,23 +92,25 @@ def add(a, b):
 #     print(dict(available))
 #     assert d == available
 
+TRILLION = 1000000000000
+
 def main():
     print("Day14, Part 2, test input 3")
     print("Should give 82892753")
     rxns = parse_input(test_input_3)
     # test(rxns)
-    print(get_fuel_for_ore(rxns, 1000000000000))
+    print(get_fuel_for_ore(rxns, TRILLION))
 
     print("Day14, Part 2, test input 4")
     print("Should give 5586022")
-    print(get_fuel_for_ore(parse_input(test_input_4), 1000000000000))
+    print(get_fuel_for_ore(parse_input(test_input_4), TRILLION))
 
-    print("Day14, Part 2, test input 5")
-    print("Should give 460664")
-    print(get_fuel_for_ore(parse_input(test_input_5), 1000000000000))
+    # print("Day14, Part 2, test input 5")
+    # print("Should give 460664")
+    # print(get_fuel_for_ore(parse_input(test_input_5), TRILLION))
 
     print("Day14, Part 2")
-    print(get_fuel_for_ore(parse_input(input), 1000000000000))
+    print(get_fuel_for_ore(parse_input(input), TRILLION))
 
 if __name__ == '__main__':
     main()
