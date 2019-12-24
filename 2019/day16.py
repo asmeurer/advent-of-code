@@ -1,23 +1,41 @@
-from itertools import cycle
-import numpy as np
+from itertools import cycle, islice
 
-def get_pattern(n):
+import numpy as np
+from numba import njit
+
+def get_pattern(n, l):
     c = cycle([0]*n + [1]*n + [0]*n + [-1]*n)
     next(c)
-    return c
+    return np.array(list(islice(c, l)))
 
+@njit
 def dot(a, b):
     A = 0
     for i, j in zip(a, b):
         A += i*j
-    return int(str(A)[-1])
+    return np.abs(A) % 10
 
-def phase(signal):
-    s = [int(i) for i in signal]
-    res = []
-    for n in range(1, len(signal) + 1):
-        res.append(dot(s, get_pattern(n)))
-    return ''.join([str(i) for i in res])
+def run_n(signal, n):
+    signal = np.array([int(i) for i in signal])
+    l = signal.shape[0]
+    patterns = np.zeros((l,)*2, dtype=np.int64)
+    for k in range(1, len(signal) + 1):
+        patterns[k-1] = get_pattern(k, l)
+
+    return ''.join([str(i) for i in _run_n(signal, patterns, n)])
+
+@njit
+def _run_n(signal, patterns, n):
+    for i in range(n):
+        signal = _phase(signal, patterns)
+    return signal
+
+@njit
+def _phase(signal, patterns):
+    res = np.zeros(signal.shape, dtype=np.int64)
+    for n in range(len(signal)):
+        res[n] = dot(signal, patterns[n])
+    return res
 
 test_input_1 = '12345678'
 test_input_2 = '80871224585914546619083218645595'
@@ -36,36 +54,31 @@ def main():
 """)
     p = test_input_1
     for i in range(4):
-        p = phase(p)
+        p = run_n(p, 1)
         print(p)
 
     print("test input 2")
     print("Should give 24176176")
-    p = test_input_2
-    for i in range(100):
-        p = phase(p)
+    p = run_n(test_input_2, 100)
     print(p[:8])
 
     print("test input 2")
     print("Should give 73745418")
-    p = test_input_3
-    for i in range(100):
-        p = phase(p)
+    p = run_n(test_input_3, 100)
     print(p[:8])
 
     print("test input 2")
     print("Should give 52432133")
-    p = test_input_4
-    for i in range(100):
-        p = phase(p)
+    p = run_n(test_input_4, 100)
     print(p[:8])
 
     print("Day 16 part 1")
-    p = input
-    for i in range(100):
-        p = phase(p)
+    p = run_n(input, 100)
     print(p[:8])
 
+    print("Day 16 part 2")
+    real_input = run_n(input, 10000)
+    print(real_input)
 
 if __name__ == '__main__':
     main()
