@@ -28,6 +28,14 @@ def dot(a, b):
         A += x*y
     return np.abs(A) % 10
 
+def dot_pattern(signal, n, repeated):
+    l = signal.shape[0]
+    A = 0
+    for r in range(repeated):
+        a = signal[r*l//repeated:(r+1)*l//repeated]
+        if np.all(a == 0):
+            continue
+
 def run_n(signal, n, repeated=1):
     signal = np.array([int(i) for i in signal])
     # print("constructing patterns")
@@ -45,14 +53,14 @@ def _run_n(signal, n, repeated=1):
 def _phase(signal, repeated=1):
     res = np.zeros((signal.shape[0], repeated), dtype=np.int64)
     l = signal.shape[0]
-    patterns = np.zeros((l,)*2, dtype=np.int64)
+    patterns = np.zeros((l, l), dtype=np.int64)
     for k in range(1, len(signal) + 1):
         patterns[k-1] = get_pattern(k, l)
 
     for n in range(l):
         for r in range(repeated):
-            res[n, r] = dot(tuple(signal), tuple(patterns[n][r:r+l]))
-    return res[:, 0]
+            res[n, r] = dot_pattern(signal, r))
+    return res.flatten()
 
 test_input_1 = '12345678'
 test_input_2 = '80871224585914546619083218645595'
@@ -93,16 +101,31 @@ def main():
     p = run_n(test_input_4, 100)
     print(p[:8])
 
-    print("Day 16 part 1")
-    p = run_n(input, 100)
-    print(p[:8])
+    # print("Day 16 part 1")
+    # p = run_n(input, 100)
+    # print(p[:8])
 
     print("Day 16 part 2 test 5")
     real_input = test_input_5
     digits = int(''.join([str(i) for i in test_input_5[:7]]).lstrip('0'))
-    p = run_n(real_input, 100, repeated=10000)
-    print(p)
+    p = run_n(real_input*10000, 100, repeated=10000)
+    # print(p)
     print(p[digits:digits+8])
+
+    # print("Day 16 part 2 test 6")
+    # digits = int(''.join([str(i) for i in test_input_6[:7]]).lstrip('0'))
+    # p = run_n(test_input_6, 1, repeated=10000)
+    # print(p)
+    #
+    # print("Day 16 part 2 test 7")
+    # digits = int(''.join([str(i) for i in test_input_7[:7]]).lstrip('0'))
+    # p = run_n(test_input_7, 1, repeated=10000)
+    # print(p)
+    #
+    # print("Day 16 part 2")
+    # digits = int(''.join([str(i) for i in input[:7]]).lstrip('0'))
+    # p = run_n(input, 1, repeated=10000)
+    # print(p)
 
     # print("Day 16 part 2")
     # real_input = run_n(input, 10000)
