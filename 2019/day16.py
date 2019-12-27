@@ -28,13 +28,17 @@ def dot(a, b):
         A += x*y
     return np.abs(A) % 10
 
-def dot_pattern(signal, n, repeated):
+@njit
+def dot_pattern_repeated(signal, n, r):
     l = signal.shape[0]
     A = 0
-    for r in range(repeated):
-        a = signal[r*l//repeated:(r+1)*l//repeated]
-        if np.all(a == 0):
-            continue
+    # if np.all(s == 0):
+    #     print("Skipping signal")
+    #     continue
+    for i, a in zip(signal, range(r*l, (r + 1)*l)):
+        p = (1 - ((a - n + 1)//n % 4))*(1 - ((a - n + 1)//n % 2))
+        A += i*p
+    return abs(A) % 10
 
 def run_n(signal, n, repeated=1):
     signal = np.array([int(i) for i in signal])
@@ -49,17 +53,18 @@ def _run_n(signal, n, repeated=1):
         signal = _phase(signal, repeated=repeated)
     return signal
 
-# @njit
+@njit
 def _phase(signal, repeated=1):
     res = np.zeros((signal.shape[0], repeated), dtype=np.int64)
     l = signal.shape[0]
-    patterns = np.zeros((l, l), dtype=np.int64)
-    for k in range(1, len(signal) + 1):
-        patterns[k-1] = get_pattern(k, l)
+    # patterns = np.zeros((l, l), dtype=np.int64)
+    # for k in range(1, len(signal) + 1):
+    #     patterns[k-1] = get_pattern(k, l)
 
     for n in range(l):
+        print(n + 1, '/', l)
         for r in range(repeated):
-            res[n, r] = dot_pattern(signal, r))
+            res[n, r] = dot_pattern_repeated(signal, n + 1, r)
     return res.flatten()
 
 test_input_1 = '12345678'
@@ -108,8 +113,8 @@ def main():
     print("Day 16 part 2 test 5")
     real_input = test_input_5
     digits = int(''.join([str(i) for i in test_input_5[:7]]).lstrip('0'))
-    p = run_n(real_input*10000, 100, repeated=10000)
-    # print(p)
+    p = run_n(real_input, 1, repeated=10000)
+    print(p)
     print(p[digits:digits+8])
 
     # print("Day 16 part 2 test 6")
