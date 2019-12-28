@@ -41,7 +41,8 @@ def prog(l, in_):
             i += 4
         elif instr == '03': # Input
             res[addr] = in_.pop(0)
-            yield
+            if res[addr] == -1:
+                yield
             i += 2
         elif instr == '04': # Output
             out = args[0]
