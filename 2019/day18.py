@@ -1,6 +1,9 @@
 from collections import defaultdict
+from random import shuffle
 
 from numba import njit
+
+from day15_1 import luby
 
 import numpy as np
 
@@ -65,33 +68,59 @@ def dijkstra(graph, start, end, cache={}):
     cache[k] = path
     return path
 
+class MaxIteration(Exception):
+    pass
 
 def backtrack(A):
     minpath = float('inf')
     def _backtrack(A, depth='', l=0):
         nonlocal minpath
+        nonlocal iters
         if l >= minpath:
-            print("Skipping")
+            # print("Skipping")
             return
+
+        if iters >= max_iters:
+            print('\r', end='')
+            raise MaxIteration
+
         graph, keys, start = make_graph(A)
 
+        K = list(keys)
+        shuffle(K)
+
         if not keys:
-            minpath = min(l, minpath)
+            if l < minpath:
+                print("New minimum:", l)
+                minpath = l
             yield []
-        for k in sorted(keys):
-            print(depth + k.decode('utf-8'), ''.join([i.decode('utf-8') for i
-                                                          in sorted(set(keys) -
-                                                                    {k})]), minpath)
+        for k in K:
+            print('\r%s' % iters, end='')
+            iters += 1
+            # print(iters, max_iters, depth + k.decode('utf-8'), ''.join([i.decode('utf-8') for i
+            #                                               in sorted(set(keys) -
+            #                                                         {k})]), minpath)
             path = dijkstra(graph, start, keys[k])
             if path:
                 B = A.copy()
                 B[B == k.upper()] = b'.'
                 B[B == b'@'] = b'.'
                 B[B == k] = b'@'
-                for p in _backtrack(B, depth=depth+k.decode('utf-8'), l=l+len(path)):
+                for p in _backtrack(B, depth=depth+k.decode('utf-8'),
+                                    l=l+len(path)):
                     yield path + p
 
-    return _backtrack(A)
+    for i in luby():
+        try:
+            iters = 0
+            max_iters = i*200
+            print("Max iters:", max_iters, "Best:", minpath)
+            yield from _backtrack(A)
+        except MaxIteration:
+            pass
+        else:
+            return
+
 def print_puzzle(A):
     for x in range(A.shape[0]):
         for y in range(A.shape[1]):
