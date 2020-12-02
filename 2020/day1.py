@@ -210,7 +210,7 @@ input = """
 1389
 """
 
-def run(input):
+def run1(input):
     nums = sorted(map(int, input.strip().split()))
 
     for i, n in enumerate(nums):
@@ -220,7 +220,26 @@ def run(input):
             if n + m == 2020:
                 print(n, m, n*m)
 
+print("part 1")
 print("test input")
-run(test_input)
+run1(test_input)
 print("puzzle input")
-run(input)
+run1(input)
+
+def run2(input):
+    nums = sorted(map(int, input.strip().split()))
+
+    for i, n in enumerate(nums):
+        for j, m in enumerate(nums):
+            for k, p in enumerate(nums):
+                if not k > j > i:
+                    continue
+                if n + m + p == 2020:
+                    print(n, m, p, n*m*p)
+
+print()
+print("part 2")
+print("test input")
+run2(test_input)
+print("puzzle input")
+run2(input)
