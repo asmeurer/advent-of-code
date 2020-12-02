@@ -1009,7 +1009,7 @@ input = """
 4-8 d: dndfcnhd
 """
 
-def run(input):
+def run(input, part=1):
     passwords = input.strip().splitlines()
     PW = re.compile(r"(\d+)-(\d+) (.): (.*)")
     good = 0
@@ -1020,15 +1020,27 @@ def run(input):
             return
         l, h, letter, pw = m.groups()
         l, h = int(l), int(h)
-        if matches(l, h, letter, pw):
+        if matches(l, h, letter, pw, part):
             good += 1
     return good
 
-def matches(l, h, letter, pw):
-    return l <= pw.count(letter) <= h
+def matches(l, h, letter, pw, part):
+    if part == 1:
+        return l <= pw.count(letter) <= h
+    elif part == 2:
+        return ((pw[l-1] == letter) + (pw[h-1] == letter)) == 1
+    else:
+        raise ValueError("Bad part (must be 1 or 2)")
 
 print("Part 1")
 print("Test input")
 print(run(test_input))
 print("Puzzle Input")
 print(run(input))
+
+
+print("Part 2")
+print("Test input")
+print(run(test_input, part=2))
+print("Puzzle Input")
+print(run(input, part=2))
