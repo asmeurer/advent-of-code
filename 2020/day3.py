@@ -349,11 +349,19 @@ def count(a, right, down):
     tot = 0
     i, j = 0, 0
     while j < cols:
-        print(i, j, a[j, i % rows])
+        # print(i, j, a[j, i % rows])
         tot += a[j, i % rows]
         i += right
         j += down
     return tot
+
+slopes = [
+    (1, 1),
+    (3, 1),
+    (5, 1),
+    (7, 1),
+    (1, 2),
+]
 
 print("Day 3, Part 1")
 print("Test input")
@@ -365,3 +373,22 @@ print("Puzzle input")
 a = make_array(input)
 print(a)
 print(count(a, 3, 1))
+
+
+print("Day 3, Part 2")
+print("Test input")
+def part2(input):
+    a = make_array(input)
+    ans = []
+    for slope in slopes:
+        trees = count(a, *slope)
+        print(trees)
+        ans.append(trees)
+    return np.prod(ans)
+
+print("Day 3, Part 2")
+print("Test input")
+print("answer:", part2(test_input))
+
+print("Puzzle input")
+print("answer:", part2(input))
