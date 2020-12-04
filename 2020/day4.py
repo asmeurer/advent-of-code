@@ -1048,6 +1048,37 @@ ecl:#a16ec8 pid:187cm hcl:z iyr:2029 hgt:170
 byr:2008
 """
 
+test2_invalid = """
+eyr:1972 cid:100
+hcl:#18171d ecl:amb hgt:170 pid:186cm iyr:2018 byr:1926
+
+iyr:2019
+hcl:#602927 eyr:1967 hgt:170cm
+ecl:grn pid:012533040 byr:1946
+
+hcl:dab227 iyr:2012
+ecl:brn hgt:182cm pid:021572410 eyr:2020 byr:1992 cid:277
+
+hgt:59cm ecl:zzz
+eyr:2038 hcl:74454a iyr:2023
+pid:3556412378 byr:2007
+"""
+
+test2_valid = """
+pid:087499704 hgt:74in ecl:grn iyr:2012 eyr:2030 byr:1980
+hcl:#623a2f
+
+eyr:2029 ecl:blu cid:129 byr:1989
+iyr:2014 pid:896056539 hcl:#a97842 hgt:165cm
+
+hcl:#888785
+hgt:164cm byr:2001 iyr:2015 cid:88
+pid:545766238 ecl:hzl
+eyr:2022
+
+iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719
+"""
+
 fields = [
     'byr',
     'iyr',
@@ -1067,15 +1098,53 @@ def parse(text):
         all_data.append(data)
     return all_data
 
-def validate(data):
+def validate1(data):
     return all(i in data for i in fields[:-1])
+
+def validate2(data):
+    return (
+        'byr' in data
+        and data['byr'].isnumeric()
+        and 1920 <= int(data['byr']) <= 2002
+        and 'iyr' in data
+        and data['iyr'].isnumeric()
+        and 2010 <= int(data['iyr']) <= 2020
+        and 'eyr' in data
+        and data['eyr'].isnumeric()
+        and 2020 <= int(data['eyr']) <= 2030
+        and 'hgt' in data
+        and (data['hgt'].endswith('cm') or data['hgt'].endswith('in'))
+        and data['hgt'][:-2].isnumeric()
+        and (150 <= int(data['hgt'][:-2]) <= 193 if data['hgt'].endswith('cm') else 59 <= int(data['hgt'][:-2]) <= 76)
+        and 'hcl' in data
+        and data['hcl'].startswith('#')
+        and len(data['hcl']) == 7
+        and all(i in '0123456789abcdef' for i in data['hcl'][1:])
+        and 'ecl' in data
+        and data['ecl'] in 'amb blu brn gry grn hzl oth'.split()
+        and 'pid' in data
+        and len(data['pid']) == 9
+        and data['pid'].isnumeric()
+    )
 
 print("Day 4")
 print("Part 1")
 print("Test input")
 for data in parse(test_input):
-    print(data, validate(data))
-print(sum(validate(data) for data in parse(test_input)))
+    print(data, validate1(data))
+print(sum(validate1(data) for data in parse(test_input)))
 
 print("Puzzle input")
-print(sum(validate(data) for data in parse(input)))
+print(sum(validate1(data) for data in parse(input)))
+
+print("Part 2")
+print("Test input")
+for data in parse(test_input):
+    print(data, validate1(data))
+print(sum(validate2(data) for data in parse(test_input)))
+print(sum(validate2(data) for data in parse(test2_invalid)))
+print(sum(validate2(data) for data in parse(test2_valid)))
+
+
+print("Puzzle input")
+print(sum(validate2(data) for data in parse(input)))
