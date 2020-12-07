@@ -10,6 +10,16 @@ faded blue bags contain no other bags.
 dotted black bags contain no other bags.
 """
 
+test_input2 = """
+shiny gold bags contain 2 dark red bags.
+dark red bags contain 2 dark orange bags.
+dark orange bags contain 2 dark yellow bags.
+dark yellow bags contain 2 dark green bags.
+dark green bags contain 2 dark blue bags.
+dark blue bags contain 2 dark violet bags.
+dark violet bags contain no other bags.
+"""
+
 input = """
 striped tan bags contain 2 light silver bags, 1 drab black bag, 2 clear tan bags, 2 mirrored tan bags.
 dark black bags contain 1 vibrant indigo bag, 5 muted gold bags, 4 bright tomato bags, 3 dull tan bags.
@@ -643,13 +653,33 @@ def count_outermost_bag(tree):
                 break
     return N
 
+def traverse2(tree, bag, num=1):
+    for n, inner in tree[bag]:
+        yield (int(n)*num, inner)
+        yield from traverse2(tree, inner, num*int(n))
+
+def count_inner(tree, bag):
+    N = 0
+    for n, inner in traverse2(tree, bag):
+        print(n, inner)
+        N += n
+    return N
+
 print("Day 7")
 print("Part 1")
 print("Test input")
-tree = get_bag_tree(test_input)
-print(tree)
-print(count_outermost_bag(tree))
+test_tree = get_bag_tree(test_input)
+print(test_tree)
+print(count_outermost_bag(test_tree))
 
 print("Puzzle input")
 tree = get_bag_tree(input)
 print(count_outermost_bag(tree))
+
+print("Part 2")
+print("Test input")
+print(count_inner(test_tree, my_bag))
+test_tree2 = get_bag_tree(test_input2)
+print(count_inner(test_tree2, my_bag))
+print("Puzzle input")
+print(count_inner(tree, my_bag))
