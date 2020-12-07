@@ -948,6 +948,11 @@ def column(seat):
 def seat_id(seat):
     return 8*row(seat) + column(seat)
 
+def missing(seats, max_id):
+    all_ids = list(range(max_id + 1))
+    for seat in seats:
+        all_ids.remove(seat_id(seat))
+    return all_ids
 
 print("Day 5")
 print("Part 1")
@@ -955,4 +960,12 @@ print("Test input")
 for seat in test_input.strip().splitlines():
     print(row(seat), column(seat), seat_id(seat))
 print("Puzzle input")
-print("Max seat ID", max(seat_id(seat) for seat in input.strip().splitlines()))
+seats = input.strip().splitlines()
+max_id = max(seat_id(seat) for seat in seats)
+print("Max seat ID", max_id)
+
+print("Part 2")
+missing_ids = missing(seats, max_id)
+print("Missing seat IDs", missing_ids)
+print("Your seat", [i for i in missing_ids if (i + 1 not in missing_ids and i
+                                               - 1 not in missing_ids)][0])
