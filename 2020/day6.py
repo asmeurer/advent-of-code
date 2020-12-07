@@ -2302,9 +2302,13 @@ tdrvxcajgnfpoke
 jtiunkpsroa
 """
 
-def answers(input):
+def any_answers(input):
     qs = input.strip().split('\n\n')
     return [set(q.replace('\n', '')) for q in qs]
+
+def all_answers(input):
+    qs = input.strip().split('\n\n')
+    return [set.intersection(*[set(f) for f in q.splitlines()]) for q in qs]
 
 def counts(qs):
     return [len(q) for q in qs]
@@ -2312,13 +2316,26 @@ def counts(qs):
 print("Day 6")
 print("Part 1")
 print("Test input")
-test_qs = answers(test_input)
+test_qs = any_answers(test_input)
 test_counts = counts(test_qs)
 print("Counts", test_counts)
 print("Total", sum(test_counts))
 
 print("Puzzle input")
-qs = answers(input)
+qs = any_answers(input)
+puzzle_counts = counts(qs)
+print("Counts", puzzle_counts)
+print("Total", sum(puzzle_counts))
+
+print("Part 2")
+print("Test input")
+test_qs = all_answers(test_input)
+test_counts = counts(test_qs)
+print("Counts", test_counts)
+print("Total", sum(test_counts))
+
+print("Puzzle input")
+qs = all_answers(input)
 puzzle_counts = counts(qs)
 print("Counts", puzzle_counts)
 print("Total", sum(puzzle_counts))
