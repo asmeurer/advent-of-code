@@ -669,7 +669,7 @@ jmp +1
 
 def get_prog(text):
     prog = [l.split() for l in text.strip().splitlines()]
-    return [(i, int(j)) for i, j in prog]
+    return [(i, int(j)) for i, j in prog] + [('end', 0)]
 
 def execute(prog):
     acc = 0
@@ -677,7 +677,7 @@ def execute(prog):
     executed = []
     while True:
         if i in executed:
-            return acc
+            return acc, 'infinite'
         executed.append(i)
         instr, val = prog[i]
         if instr == 'nop':
@@ -687,16 +687,39 @@ def execute(prog):
             i += 1
         elif instr == 'jmp':
             i += val
+        elif instr == 'end':
+            return acc, 'terminated'
         else:
             raise ValueError(f"Invalid instruction {instr}")
+
+def mutate_program(prog):
+    for i in range(len(prog)):
+        instr, val = prog[i]
+        if instr == 'nop':
+            instr = 'jmp'
+        elif instr == 'jmp':
+            instr = 'nop'
+        else:
+            continue
+        prog2 = prog.copy()
+        prog2[i] = instr, val
+        result, typ = execute(prog2)
+        if typ == 'terminated':
+            return result
 
 print("Day 8")
 print("Part 1")
 print("Test input")
-prog = get_prog(test_input)
-for instr, val in prog:
+test_prog = get_prog(test_input)
+for instr, val in test_prog:
     print(instr, val)
-print(execute(prog))
+print(execute(test_prog))
 print("Puzzle input")
 prog = get_prog(input)
 print(execute(prog))
+
+print("Part 2")
+print("Test input")
+print(mutate_program(test_prog))
+print("Puzzle input")
+print(mutate_program(prog))
