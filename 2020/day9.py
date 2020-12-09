@@ -1035,16 +1035,38 @@ def check_combinations(preamble, number):
             return True
     return False
 
-def test_list(l, preamble_length):
+def get_invalid(l, preamble_length):
     for i in range(len(l) - preamble_length - 1):
         preamble = l[i:i+preamble_length]
         number = l[i+preamble_length]
         if not check_combinations(preamble, number):
             return number
 
+def get_weakness(l, invalid_number):
+    for i in range(len(l)):
+        for j in range(i, len(l)):
+            s = sum(l[i:j])
+            if s == invalid_number:
+                print(l[i:j])
+                return min(l[i:j]) + max(l[i:j])
+            if s > invalid_number:
+                break
+
 print("Day 9")
 print("Part 1")
 print("Test input")
-print(test_list(get_list(test_input), 5))
+test_list = get_list(test_input)
+test_invalid_number = get_invalid(test_list, 5)
+print(test_invalid_number)
 print("Puzzle input")
-print(test_list(get_list(puzzle_input), 25))
+puzzle_list = get_list(puzzle_input)
+puzzle_invalid_number = get_invalid(puzzle_list, 25)
+print(puzzle_invalid_number)
+
+print("Part 2")
+print("Test input")
+test_weakness = get_weakness(test_list, test_invalid_number)
+print(test_weakness)
+print("Puzzle input")
+puzzle_weakness = get_weakness(puzzle_list, puzzle_invalid_number)
+print(puzzle_weakness)
