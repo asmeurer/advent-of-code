@@ -147,6 +147,10 @@ input = """
 """
 
 import numpy as np
+from sympy import symbols, Add
+
+from itertools import groupby
+from functools import lru_cache
 
 def get_array(text):
     l = sorted(map(int, text.strip().splitlines()))
@@ -154,9 +158,69 @@ def get_array(text):
 
 def count1(a):
     d = np.diff(a)
-    ones = np.sum([d==1])
-    threes = np.sum([d==3])
+    ones = np.sum(d==1)
+    threes = np.sum(d==3)
     return (ones, threes)
+
+# 1 1 1 1 1 1 1 1
+# 3     1 1 1 1 1
+# 3     3     1 1
+# 3     1 3     1
+# 1 3     1 1 1 1
+# 1 3     3     1
+# 1 3     1 3
+# 1 1 3     1 1 1
+# 1 1 3     3
+# 1 1 1 3     1 1
+# 1 1 1 1 3     1
+
+# We are trying to count the number of ways to compose n using only 1, 2, and
+# 3. See https://en.wikipedia.org/wiki/Composition_(combinatorics). The number
+# of compositions of n into k parts is
+
+# coeff((x + x**2 + x**3)**k, x**n)
+
+# Since we want the total number of ways ways, we add k = 1, ..., n (k must be
+# <= n).
+
+# For example, for n = 3, we have the following compositions (4 total):
+
+# 1 1 1
+# 2   1
+# 1   2
+# 3
+
+# For n = 4, there are 7:
+
+# 1 1 1 1
+# 2   1 1
+# 2   2
+# 1 2   1
+# 1 1 2
+# 3     1
+# 1 3
+
+@lru_cache()
+def compositions(n):
+    x = symbols('x')
+    p = x + x**2 + x**3
+    return Add(*[p**k for k in range(1, n + 1)]).expand().coeff(x**n)
+
+def count2(a):
+    d = list(np.diff(a))
+    # The number of ways is the product of the number of compositions for each
+    # group of 1s.
+    res = 1
+    for k, v in groupby(d):
+        if k == 1:
+            res *= compositions(len(list(v)))
+        elif k == 2:
+            raise ValueError("This algorithm doesn't work if there are differences of 2")
+        elif k == 3:
+            pass
+        else:
+            raise ValueError(f"Unexpected diff: {k}")
+    return res
 
 print("Day 10")
 print("Part 1")
@@ -175,6 +239,16 @@ print(ones, threes)
 
 print("Puzzle input")
 a = get_array(input)
+print(np.diff(a))
 ones, threes = count1(a)
 print(ones, threes)
 print(ones*threes)
+
+print("Part 2")
+print(compositions(3))
+print(compositions(4))
+print(compositions(5))
+print("Test input")
+print(count2(test_a1))
+print(count2(test_a2))
+print(count2(a))
