@@ -11,6 +11,34 @@ L.LLLLLL.L
 L.LLLLL.LL
 """
 
+test_input2 = """
+.......#.
+...#.....
+.#.......
+.........
+..#L....#
+....#....
+.........
+#........
+...#.....
+"""
+
+test_input3 = """
+.............
+.L.L.#.#.#.#.
+.............
+"""
+
+test_input4 = """
+.##.##.
+#.#.#.#
+##...##
+...L...
+##...##
+#.#.#.#
+.##.##.
+"""
+
 input = """
 LL.LL.LLLLLL.LLLLLLLLLLLLLLLLLL.LLLLL..LLLLLLL.LLLLLLLLLLLL.LLLL.LLLLL.LL.LLLLLL.LLLL.LLLLL
 LLLLL.LLLLLL.LLLLLLLLLLLLL.LLLL.LL.LLLLLLLLLLLLLLLLLLLLLLLL.LLLL.LLLLLLLLLLLLLLLLLLLLLLLLLL
@@ -139,6 +167,24 @@ def adjacent(a, i, j):
             adj.append(a[newi, newj])
     return np.array(adj)
 
+def adjacent2(a, i, j):
+    rows, cols = a.shape
+    adj = []
+    for idir in [-1, 0, 1]:
+        for jdir in [-1, 0, 1]:
+            if idir == jdir == 0:
+                continue
+            for x in range(1, max(rows, cols)):
+                newi = i + idir*x
+                newj = j + jdir*x
+                if newi < 0 or newi >= rows or newj < 0 or newj >= cols:
+                    break
+                c = a[newi, newj]
+                if c in [-1, 1]:
+                    adj.append(c)
+                    break
+    return np.array(adj)
+
 def apply_rules(a):
     newa = a.copy()
     rows, cols = a.shape
@@ -167,8 +213,38 @@ def generations(a):
             return a
         n += 1
 
+
+def apply_rules2(a):
+    newa = a.copy()
+    rows, cols = a.shape
+    changed = False
+    for i in range(rows):
+        for j in range(cols):
+            if a[i, j] == 0:
+                continue
+            adj = adjacent2(a, i, j)
+            if a[i, j] == -1 and np.sum(adj==1) == 0:
+                changed = True
+                newa[i, j] = 1
+            elif a[i, j] == 1 and np.sum(adj==1) >= 5:
+                changed = True
+                newa[i, j] = -1
+    return newa, changed
+
+def generations2(a):
+    n = 0
+    while True:
+        print("Generation", n)
+        print(arraytostr(a))
+        print()
+        a, changed = apply_rules2(a)
+        if not changed:
+            return a
+        n += 1
+
 print("Day 11")
 print("Part 1")
+print("Test input")
 testa = strtoarray(test_input)
 print(test_input)
 print(testa)
@@ -178,6 +254,28 @@ print("Adjacent to 2, 2", arraytostr(adjacent(testa, 2, 2)))
 test_finala = generations(testa)
 print(np.sum(test_finala == 1))
 
+print("Puzzle input")
 a = strtoarray(input)
 finala = generations(a)
+print(np.sum(finala == 1))
+
+print("Part 2")
+print("Test input")
+testa2 = strtoarray(test_input2)
+assert testa2[4, 3] == -1
+print(adjacent2(testa2, 4, 3))
+
+testa3 = strtoarray(test_input3)
+assert testa3[1, 3] == -1
+print(adjacent2(testa3, 1, 3))
+
+testa4 = strtoarray(test_input4)
+assert testa4[3, 3] == -1
+print(adjacent2(testa4, 3, 3))
+
+test_finala = generations2(testa)
+print(np.sum(test_finala==1))
+
+print("Puzzle input")
+finala = generations2(a)
 print(np.sum(finala == 1))
