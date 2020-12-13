@@ -826,6 +826,45 @@ def move(vectors):
 
     return location
 
+
+def move2(vectors):
+    # x, y
+    location = np.array([0, 0])
+    waypoint = np.array([10, 1])
+    # east
+    N, S, E, W = np.array([[0, 1], [0, -1], [1, 0], [-1, 0]])
+    R = np.array([[0, 1], [-1, 0]])
+    L = -R
+    for dir, amount in vectors:
+        # print('location', location)
+        # print('waypoint', waypoint)
+        # print(dir, amount)
+        if dir == 'F':
+            location += waypoint*amount
+        elif dir == 'N':
+            waypoint += N*amount
+        elif dir == 'S':
+            waypoint += S*amount
+        elif dir == 'E':
+            waypoint += E*amount
+        elif dir == 'W':
+            waypoint += W*amount
+        elif dir == 'R':
+            num = amount//90
+            for i in range(num):
+                waypoint = R@waypoint
+        elif dir == 'L':
+            num = amount//90
+            for i in range(num):
+                waypoint = L@waypoint
+        else:
+            raise ValueError(f"Bad instruction {dir, amount}")
+
+    # print('location', location)
+    # print('waypoint', waypoint)
+
+    return location
+
 def manhattan(location):
     return np.sum(abs(location))
 
@@ -840,5 +879,16 @@ print(manhattan(test_end))
 print("Puzzle input")
 vectors = parse_input(input)
 end = move(vectors)
+print(end)
+print(manhattan(end))
+
+print("Part 2")
+print("Test input")
+test_end = move2(test_vectors)
+print(test_end)
+print(manhattan(test_end))
+
+print("Puzzle input")
+end = move2(vectors)
 print(end)
 print(manhattan(end))
