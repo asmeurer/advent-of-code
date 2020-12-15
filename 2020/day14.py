@@ -5,6 +5,13 @@ mem[7] = 101
 mem[8] = 0
 """
 
+test_input2 = """
+mask = 000000000000000000000000000000X1001X
+mem[42] = 100
+mask = 00000000000000000000000000000000X0XX
+mem[26] = 1
+"""
+
 input = """
 mask = 100110X100000XX0X100X1100110X001X100
 mem[21836] = 68949
@@ -529,6 +536,7 @@ mem[61739] = 56110
 mem[43710] = 78470470
 """
 
+import itertools
 import re
 MASK = re.compile(r"mask = (.*)")
 MEM = re.compile(r"mem\[(.*)\] = (.*)")
@@ -554,6 +562,19 @@ def run(instrs):
             mem[addr] = apply_mask(val, zeros, ones)
     return mem
 
+def run2(instrs):
+    mem = {}
+    for instr, *rest in instrs:
+        if instr == 'mask':
+            mask = rest[0]
+            zeros, ones = parse_mask(mask)
+        elif instr == 'mem':
+            addr, val = rest
+            addrs = apply_mask2(addr, ones, mask)
+            for a in addrs:
+                mem[a] = val
+    return mem
+
 def parse_mask(mask):
     zeros = int('0b' + mask.replace('1', 'X').replace('0', '1').replace('X', '0'), 2)
     ones = int('0b' + mask.replace('0', 'X').replace('X', '0'), 2)
@@ -563,6 +584,25 @@ def apply_mask(val, zeros, ones):
     val = ~(~val | zeros)
     val |= ones
     return val
+
+def apply_mask2(addr, ones, mask):
+    addr |= ones
+    addrs = []
+    masks = []
+    indices = [i for i in range(len(mask)) if mask[i] == 'X']
+    n = len(indices)
+    for vals in itertools.product('01', repeat=n):
+        mask2 = list(mask)
+        for i in range(len(mask2)):
+            if i in indices:
+                mask2[i] = vals[indices.index(i)]
+            else:
+                mask2[i] = 'X'
+        masks.append(''.join(mask2))
+    for m in masks:
+        zeros, ones = parse_mask(m)
+        addrs.append(apply_mask(addr, zeros, ones))
+    return addrs
 
 print("Day 14")
 print("Part 1")
@@ -577,3 +617,16 @@ instrs = parse_input(input)
 mem = run(instrs)
 print(mem)
 print(sum(mem.values()))
+
+print("Day 14")
+print("Part 2")
+print("Test input")
+test_instrs2 = parse_input(test_input2)
+test_mem2 = run2(test_instrs2)
+print(test_mem2)
+print(sum(test_mem2.values()))
+
+print("Puzzle input")
+mem2 = run2(instrs)
+# print(mem2)
+print(sum(mem2.values()))
