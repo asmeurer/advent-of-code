@@ -276,6 +276,8 @@ nearby tickets:
 239,213,529,447,384,482,381,192,512,135,927,10,304,138,213,817,86,699,120,912
 """
 
+from sympy import Symbol, Or, And, Not, satisfiable, prod
+
 import re
 RULE = re.compile(r"(.*): (\d+)-(\d+) or (\d+)-(\d+)")
 
@@ -289,19 +291,62 @@ def parse_input(text):
                       _nearby_tickets.splitlines()[1:]]
     return rules, your_ticket, nearby_tickets
 
+def test_rule(value, rules, rule):
+    (lower1, upper1), (lower2, upper2) = rules[rule]
+    return lower1 <= value <= upper1 or lower2 <= value <= upper2
+
 def test_valid(tickets, rules):
     invalid = []
     for ticket in tickets:
         for i in ticket:
             valid = False
             for rule in rules:
-                (lower1, upper1), (lower2, upper2) = rules[rule]
-                if lower1 <= i <= upper1 or lower2 <= i <= upper2:
+                if test_rule(i, rules, rule):
                     valid = True
                     continue
             if not valid:
                 invalid.append(i)
     return invalid
+
+def find_order(tickets, rules):
+    nrules = len(rules)
+    nfields = len(tickets[0])
+    # fields is a list of variables where fields[i][j] = field_i_j represents
+    # field i matching rule j
+    fields = [[Symbol(f"field_{i}_{j}") for j in range(nrules)] for i in range(nfields)]
+
+    clauses = []
+    # Base clauses, each field can match exactly 1 rule
+    for i in range(nfields):
+        parts = []
+        for j in range(nrules):
+            parts.append(And(fields[i][j], *[Not(fields[i][k]) for k in
+                                                  range(nfields) if k != j]))
+        clauses.append(Or(*parts))
+    # Each rule can match exactly one field
+    for j in range(nrules):
+        parts = []
+        for i in range(nfields):
+            parts.append(And(fields[i][j], *[Not(fields[k][j]) for k in
+                                                  range(nfields) if k != i]))
+        clauses.append(Or(*parts))
+
+    # Add rules for any mismatching fields
+    for ticket in tickets:
+        for i in range(nfields):
+            for j in range(nrules):
+                rule = list(rules.keys())[j]
+                value = ticket[i]
+                if not test_rule(value, rules, rule):
+                    clauses.append(Not(fields[i][j]))
+
+    solution = satisfiable(And(*clauses))
+    order = {}
+    for i in range(nfields):
+        for j in range(nrules):
+            if solution[fields[i][j]]:
+                order[list(rules.keys())[j]] = i
+    return order
 
 print("Day 16")
 print("Part 1")
@@ -318,3 +363,15 @@ print("Puzzle input")
 rules, your_ticket, nearby_tickets = parse_input(input)
 invalid = test_valid(nearby_tickets, rules)
 print(sum(invalid))
+
+print("Part 2")
+print("Test input")
+test_valid_tickets = [t for t in test_nearby_tickets if not any(i in t for i in test_invalid)]
+test_tickets = [test_your_ticket] + test_valid_tickets
+print(find_order(test_tickets, test_rules))
+
+print("Puzzle input")
+valid_tickets = [t for t in nearby_tickets if not any(i in t for i in invalid)]
+tickets = [your_ticket] + valid_tickets
+order = find_order(tickets, rules)
+print(prod(order[i] for i in order if 'departure' in i))
