@@ -310,42 +310,52 @@ def test_valid(tickets, rules):
 
 def find_order(tickets, rules):
     nrules = len(rules)
-    nfields = len(tickets[0])
     # fields is a list of variables where fields[i][j] = field_i_j represents
     # field i matching rule j
-    fields = [[Symbol(f"field_{i}_{j}") for j in range(nrules)] for i in range(nfields)]
+    fields = [[Symbol(f"field_{i}_{j}") for j in range(nrules)] for i in range(nrules)]
 
     clauses = []
-    # Base clauses, each field can match exactly 1 rule
-    for i in range(nfields):
-        parts = []
-        for j in range(nrules):
-            parts.append(And(fields[i][j], *[Not(fields[i][k]) for k in
-                                                  range(nfields) if k != j]))
-        clauses.append(Or(*parts))
-    # Each rule can match exactly one field
+    # Base clauses:
+
+    # Each field appears at least once:
+    for i in range(nrules):
+        clauses.append(Or(*fields[i]))
+    # Each rule appears at least once
     for j in range(nrules):
-        parts = []
-        for i in range(nfields):
-            parts.append(And(fields[i][j], *[Not(fields[k][j]) for k in
-                                                  range(nfields) if k != i]))
-        clauses.append(Or(*parts))
+            clauses.append(Or(*[fields[i][j] for i in range(nrules)]))
+
+    # Each field is mutually exclusive with the others
+    for i in range(nrules):
+        for j in range(nrules):
+            for k in range(nrules):
+                if j != k:
+                    clauses.append(Or(Not(fields[i][j]), Not(fields[i][k])))
 
     # Add rules for any mismatching fields
     for ticket in tickets:
-        for i in range(nfields):
+        for i in range(nrules):
             for j in range(nrules):
-                rule = list(rules.keys())[j]
+                rule = list(rules)[j]
                 value = ticket[i]
                 if not test_rule(value, rules, rule):
                     clauses.append(Not(fields[i][j]))
 
-    solution = satisfiable(And(*clauses))
+    solutions = satisfiable(And(*clauses), all_models=True)
+    solution = next(solutions)
+    if solution is False:
+        raise ValueError("Unsatisfiable solution")
+    try:
+        solution2 = next(solutions)
+    except StopIteration:
+        pass
+    else:
+        raise ValueError(f"Got more than one solution: {solution}, {solution2}")
+
     order = {}
-    for i in range(nfields):
+    for i in range(nrules):
         for j in range(nrules):
             if solution[fields[i][j]]:
-                order[list(rules.keys())[j]] = i
+                order[list(rules)[j]] = i
     return order
 
 print("Day 16")
@@ -374,4 +384,6 @@ print("Puzzle input")
 valid_tickets = [t for t in nearby_tickets if not any(i in t for i in invalid)]
 tickets = [your_ticket] + valid_tickets
 order = find_order(tickets, rules)
-print(prod(order[i] for i in order if 'departure' in i))
+print(order)
+print(your_ticket)
+print(prod(your_ticket[order[i]] for i in order if 'departure' in i))
