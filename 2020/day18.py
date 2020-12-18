@@ -7,6 +7,15 @@ test_inputs = {
     "((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2": 13632,
 }
 
+test_inputs2 = {
+    "1 + 2 * 3 + 4 * 5 + 6": 231,
+    "1 + (2 * 3) + (4 * (5 + 6))": 51,
+    "2 * 3 + (4 * 5)": 46,
+    "5 + (8 * 3 + 9 + 3 * 4 * 3)": 1445,
+    "5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))": 669060,
+    "((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2": 23340,
+}
+
 input = """
 5 + 8 * ((6 * 5 * 8 + 5 + 8) * 7 + 3)
 6 * 7 + 7 * (9 * 6 + 6 + 4 * 6) * 5 * 4
@@ -405,6 +414,15 @@ class Number:
         return NotImplemented
     __rmatmul__ = __matmul__
 
+    # - has the same precedence as +, so use it for the lower precedence *
+    def __sub__(self, other):
+        if isinstance(other, int):
+            return self.__sub__(Number(other))
+        elif isinstance(other, Number):
+            return Number(self.n * other.n)
+        return NotImplemented
+    __rsub__ = __sub__
+
     def __str__(self):
         return f"Number({self.n})"
     __repr__ = __str__
@@ -416,7 +434,7 @@ class Number:
             return self.n == other.n
         return NotImplemented
 
-def evaluate(expr):
+def evaluate(expr, part=1):
     new_tokens = []
     for tok in tokenize.generate_tokens(io.StringIO(expr).readline):
         t = tok.exact_type
@@ -430,6 +448,8 @@ def evaluate(expr):
             ])
         elif t == tokenize.PLUS:
             new_tokens.append((tokenize.AT, '@'))
+        elif part == 2 and t == tokenize.STAR:
+            new_tokens.append((tokenize.MINUS, '-'))
         else:
             new_tokens.append((t, s))
 
@@ -449,4 +469,18 @@ print("Puzzlie input")
 S = 0
 for line in input.strip().splitlines():
     S @= evaluate(line)
+print(S)
+
+print("Part 2")
+print("Test input")
+for expr, result in test_inputs2.items():
+    ans = evaluate(expr, part=2)
+    if ans == result:
+        print(expr, "OK")
+    else:
+        raise RuntimeError(f"{expr} gave {ans} instead of {result}")
+print("Puzzlie input")
+S = 0
+for line in input.strip().splitlines():
+    S @= evaluate(line, part=2)
 print(S)
