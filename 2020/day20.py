@@ -1858,25 +1858,33 @@ def parse_input(text):
         tiles[n] = a
     return tiles
 
-def edges(a):
-    for step in [1, -1]:
-        yield a[0][::step]
-        yield a[-1][::step]
-        yield a[:, 0][::step]
-        yield a[:, -1][::step]
+def rotate(tile):
+    return tile[:, ::-1].T
+
+def flip(tile):
+    return tile[::-1]
+
+def orientations(tile):
+    t = tile
+    for i in range(2):
+        t = flip(t)
+        for j in range(4):
+            t = rotate(t)
+            yield t
 
 def match(tiles):
     matching = defaultdict(list)
     for n, tile in tiles.items():
-        for edge in edges(tile):
-            matching[tuple(edge)].append(n)
+        for o in orientations(tile):
+            edge = o[0]
+            matching[tuple(edge)].append((n, o))
     return matching
 
 def get_number(matching):
     number = Counter()
     for edge, t in matching.items():
         if len(t) == 1:
-            number[t[0]] += 1
+            number[t[0][0]] += 1
     return number
 
 print("Day 20")
@@ -1884,8 +1892,10 @@ print("Part 1")
 print("Test input")
 test_tiles = parse_input(test_input)
 print(test_tiles)
-print(list(edges(test_tiles[3079])))
+print("Orientations")
+print(list(orientations(test_tiles[3079])))
 matching = match(test_tiles)
+print("Matching")
 print(matching)
 test_number = get_number(matching)
 print(test_number)
