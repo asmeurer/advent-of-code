@@ -1845,6 +1845,14 @@ from collections import defaultdict, Counter
 import re
 TILE = re.compile(r"Tile (\d+):")
 
+MONSTER = """\
+                  # \n\
+#    ##    ##    ###\n\
+ #  #  #  #  #  #   \n\
+"""
+
+monster = np.array([[False if i == ' ' else True for i in line] for line in MONSTER.splitlines()])
+
 def make_array(lines):
     return np.array([[0 if i == '.' else 1 for i in line] for line in
                      lines])
@@ -1887,6 +1895,75 @@ def get_number(matching):
             number[t[0][0]] += 1
     return number
 
+def combine(tiles):
+    matching = match(tiles)
+    number = get_number(matching)
+    corners = [c for c in number if number[c] == 4]
+
+    start = corners[0]
+    for o in orientations(tiles[start]):
+        if len(matching[tuple(o[:, -1])]) == len(matching[tuple(o[-1])]) == 2:
+            break
+
+    current = o
+    gridn = [[start]]
+    grid = [[o]]
+    stop = True
+    while sum(len(r) for r in gridn) < len(tiles):
+        while stop:
+            stop = False
+            for n, tile in tiles.items():
+                if any(n in r for r in gridn):
+                    continue
+                for o in orientations(tile):
+                    if np.all(o[:, 0] == current[:, -1]):
+                        grid[-1].append(o)
+                        gridn[-1].append(n)
+                        current = o
+                        stop = True
+                        break
+                if stop:
+                    break
+
+        current = grid[-1][0]
+        stop = False
+        for n, tile in tiles.items():
+            if any(n in r for r in gridn):
+                continue
+            for o in orientations(tile):
+                if np.all(o[0] == current[-1]):
+                    grid.append([o])
+                    gridn.append([n])
+                    current = o
+                    stop = True
+                    break
+            if stop:
+                break
+
+    print(gridn)
+    grid = [[a[1:-1,1:-1] for a in r] for r in grid]
+
+    return np.block(grid)
+
+def print_grid(grid):
+    x, y = grid.shape
+    for i in range(x):
+        for j in range(y):
+            print('#' if grid[i, j] == 1 else '.', end='')
+        print()
+
+def find_monster(grid):
+    x, y = grid.shape
+    safe = np.ones(grid.shape)
+    for m in orientations(monster):
+        a, b = m.shape
+
+        for i in range(x - a):
+            for j in range(y - b):
+                if np.all(grid[i:i+a,j:j+b][m]):
+                    safe[i:i+a,j:j+b][m] = 0
+    return safe
+
 print("Day 20")
 print("Part 1")
 print("Test input")
@@ -1907,3 +1984,19 @@ matching = match(tiles)
 number = get_number(matching)
 print(number)
 print(np.prod([i for i in number if number[i] == 4]))
+
+print("Part 2")
+print("Test input")
+test_grid = combine(test_tiles)
+print(test_grid)
+print_grid(test_grid)
+print(monster)
+test_safe = find_monster(test_grid)
+print(test_safe)
+print("Roughness:", np.sum(test_safe*test_grid))
+
+print("Puzzle input")
+grid = combine(tiles)
+print_grid(grid)
+safe = find_monster(grid)
+print("Roughness:", np.sum(safe*grid))
