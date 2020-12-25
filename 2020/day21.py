@@ -95,6 +95,15 @@ def create_clauses(foods):
                     clauses.append(Or(Not(Symbol(f"{i}_{a}")),
                                       Not(Symbol(f"{j}_{a}"))))
 
+    # Pairs of different alergens with the same ingredients are mutually
+    # exclusive.
+    for i in ingredients:
+        for a in alergens:
+            for b in alergens:
+                if a != b:
+                    clauses.append(Or(Not(Symbol(f"{i}_{a}")),
+                                      Not(Symbol(f"{i}_{b}"))))
+
     # Alergens are not in unlisted ingredients
     for I in foods:
         for a in foods[I]:
@@ -110,18 +119,17 @@ def create_clauses(foods):
     return And(*clauses)
 
 def solve(clauses):
-    return satisfiable(clauses, all_models=True)
+    return satisfiable(clauses)
 
-def get_no_alergens(foods, solutions):
+def get_no_alergens(foods, solution):
     ingredients = set().union(*[set(i) for i in foods])
 
     no_alergens = ingredients.copy()
 
-    for sol in solutions:
-        for s in sol:
-            i, a = s.name.split('_')
-            if sol[s] and i in no_alergens:
-                no_alergens.remove(i)
+    for s in solution:
+        i, a = s.name.split('_')
+        if solution[s] and i in no_alergens:
+            no_alergens.remove(i)
 
     return no_alergens
 
@@ -134,12 +142,16 @@ print(test_foods)
 test_symbols = create_symbols(test_foods)
 print(test_symbols)
 test_clauses = create_clauses(test_foods)
-test_solutions = list(solve(test_clauses))
-for sol in test_solutions:
-    print(sol)
-test_no_alergens = get_no_alergens(test_foods, test_solutions)
+test_solution = solve(test_clauses)
+test_no_alergens = get_no_alergens(test_foods, test_solution)
 print(test_no_alergens)
 print(sum(i in test_food for test_food in test_foods for i in test_no_alergens))
+
+print("Part 2")
+print("Test Input")
+print(','.join([s.name.split('_')[0] for s in sorted([s for s in test_solution
+                                                     if test_solution[s]],
+                                                     key=lambda s: s.name.split('_')[1])]))
 
 print("Puzzle input")
 foods = parse_input(input)
@@ -147,9 +159,15 @@ foods = parse_input(input)
 symbols = create_symbols(foods)
 # print(symbols)
 clauses = create_clauses(foods)
-solutions = list(solve(clauses))
+solution = solve(clauses)
 # for sol in solutions:
 #     print(sol)
-no_alergens = get_no_alergens(foods, solutions)
+no_alergens = get_no_alergens(foods, solution)
 print(no_alergens)
 print(sum(i in food for food in foods for i in no_alergens))
+
+print("Part 2")
+print("Puzzle Input")
+print(','.join([s.name.split('_')[0] for s in sorted([s for s in solution
+                                                     if solution[s]],
+                                                     key=lambda s: s.name.split('_')[1])]))
