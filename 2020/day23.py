@@ -16,23 +16,25 @@ def move(cups, cup):
     dest = cup
     while True:
         dest = (dest - 1) % (N + 1)
-        if dest in [0, next1, next2, next3, cup]:
-            continue
-        for i in range(len(cups)):
-            if cups[i] == dest:
-                cups.insert(i + 1, next1)
-                cups.insert(i + 2, next2)
-                cups.insert(i + 3, next3)
-                return next_cup
+        if dest not in [0, next1, next2, next3, cup]:
+            break
+    i = cups.index(dest)
+    cups.insert(i + 1, next1)
+    cups.insert(i + 2, next2)
+    cups.insert(i + 3, next3)
+    return next_cup
 
-def run(cups, n, verbose=False):
+def run(cups, n, verbose=0):
     cup = cups[0]
     for i in range(1, n+1):
-        if verbose:
+        if verbose == 1:
             print("Cup", cup)
             print("Move", i, cups)
+        if verbose == 2:
+            if i % 100 == 0:
+                print(i, n)
         cup = move(cups, cup)
-    if verbose:
+    if verbose == 1:
         print("Cup", cup)
         print("Move", i + 1, cups)
 
@@ -59,3 +61,19 @@ cups = parse_input(input)
 run(cups, 100)
 print(cups)
 print(canonical(cups))
+
+print("Part 2")
+print("Test input")
+N = 100
+test_cups2 = test_cups + list(range(10, N+1))
+assert len(test_cups2) == N
+# run(test_cups2, 10*N, verbose=2)
+# idx = test_cups2.index(1)
+# test_star1 = test_cups2[(idx + 1) % len(test_cups2)]
+# test_star2 = test_cups2[(idx + 2) % len(test_cups2)]
+# print(test_star1, test_star2)
+# print(N - test_star1, N - test_star2)
+# print(test_star1*test_star2)
+
+
+run(test_cups2, 10*N, verbose=1)
