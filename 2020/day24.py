@@ -687,7 +687,7 @@ def make_moves(grid, moves):
     x, y = 0, 0
     for move in moves:
         x, y = move_hex(x, y, move)
-    print(x, y, grid[x, y])
+    # print(x, y, grid[x, y])
     grid[x, y] ^= 1
     return grid
 
@@ -695,6 +695,65 @@ def move_all(all_moves):
     grid = defaultdict(int)
     for moves in all_moves:
         grid = make_moves(grid, moves)
+    return grid
+
+def adjacent(x, y):
+    moves = parse_input('ewnwneswse')[0]
+    for move in moves:
+        yield move_hex(x, y, move)
+
+def evolve_grid(grid):
+    grid2 = grid.copy()
+    minx = min(x for x, y in grid if grid[x, y])
+    miny = min(y for x, y in grid if grid[x, y])
+    maxx = max(x for x, y in grid if grid[x, y])
+    maxy = max(y for x, y in grid if grid[x, y])
+    # Make sure we go over the bounds
+    for y in range(miny-1, maxy+2):
+        for x in range(minx-1, maxx+2):
+            grid2[x, y]
+    for tile in grid2:
+        nadj = sum(grid[x, y] for x, y in adjacent(*tile))
+        if grid[tile] == 0 and nadj == 2:
+            grid2[tile] = 1
+        elif grid[tile] == 1 and nadj == 0 or nadj > 2:
+            grid2[tile] = 0
+    return grid2
+
+# x x x x x
+#  x x x x x
+# x x x x x
+
+black = "\u2588"
+
+def print_grid(grid):
+    minx = min(x for x, y in grid)
+    miny = min(y for x, y in grid)
+    maxx = max(x for x, y in grid)
+    maxy = max(y for x, y in grid)
+
+    for i in range(3):
+        print(' '*3 + ''.join(("%3s" % x)[i] + ' ' for x in range(minx, maxx+1)))
+    for y in range(miny, maxy+1):
+        print("%3s" % y, end='')
+        if y % 2:
+            print(' ', end='')
+        for x in range(minx, maxx+1):
+            if grid[x, y] == 0:
+                print('  ', end='')
+            else:
+                print(black + ' ', end='')
+        print()
+    print()
+
+def evolve(grid):
+    print("Day 0")
+    print_grid(grid)
+    for i in range(1, 101):
+        print("Day", i)
+        grid = evolve_grid(grid)
+        print_grid(grid)
+        print(sum(grid.values()), "black tiles")
     return grid
 
 print("Day 24")
@@ -708,10 +767,27 @@ print(move_all(test_moves1))
 print(move_all(test_moves2))
 test_grid = move_all(test_moves)
 print(test_grid)
+print_grid(test_grid)
 print(sum(test_grid.values()))
 
 print("Puzzle input")
 moves = parse_input(input)
 grid = move_all(moves)
 print(grid)
+print_grid(grid)
 print(sum(grid.values()))
+
+print("Part 2")
+print("Test input")
+print("Day 0")
+print_grid(test_grid)
+test_grid1 = evolve_grid(test_grid)
+print("Day 1")
+print_grid(test_grid1)
+print(test_grid1)
+print(sum(test_grid1.values()))
+evolve(test_grid)
+
+print("Puzzle input")
+grid_final = evolve(grid)
+print(sum(grid_final.values()))
