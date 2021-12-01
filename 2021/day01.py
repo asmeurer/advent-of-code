@@ -2022,10 +2022,20 @@ def get_array(vals):
 print("Day 1")
 print("Part 1")
 print("Test input")
-testa = get_array(test_input)
-print(d := np.diff(testa))
+test_a = get_array(test_input)
+print(d := np.diff(test_a))
 print(np.sum(d > 0))
 
 print("Puzzle input")
 a = get_array(puzzle_input)
 print(np.sum(np.diff(a) > 0))
+
+print("Part 2")
+test_window = test_a[:-2] + test_a[1:-1] + test_a[2:]
+print(test_window)
+print(np.sum(np.diff(test_window) > 0))
+
+print("Puzzle input")
+window = a[:-2] + a[1:-1] + a[2:]
+print(window)
+print(np.sum(np.diff(window) > 0))
