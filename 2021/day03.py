@@ -1029,6 +1029,30 @@ def get_eps_gamma(a):
 
     return eps, gamma
 
+def get_o2_co2(a):
+    nbits = a.shape[1]
+    b = a
+    for i in range(nbits):
+        nums = b.shape[0]
+        if nums == 1:
+            break
+        b = b[b[:, i] == (2*np.sum(b, axis=0) >= nums)[i]]
+    assert b.shape[0] == 1
+
+    o2 = np.polyval(b[0], 2)
+
+    b = a
+    for i in range(nbits):
+        nums = b.shape[0]
+        if nums == 1:
+            break
+        b = b[b[:, i] == (2*np.sum(b, axis=0) < nums)[i]]
+    assert b.shape[0] == 1
+
+    co2 = np.polyval(b[0], 2)
+
+    return o2, co2
+
 print("Day 3")
 print("Part 1")
 print("Test input")
@@ -1044,3 +1068,14 @@ print(repr(a))
 eps, gamma = get_eps_gamma(a)
 print(eps, gamma)
 print(eps*gamma)
+
+print("Part 2")
+print("Test input")
+test_o2, test_co2 = get_o2_co2(test_a)
+print(test_o2, test_co2)
+print(test_o2*test_co2)
+
+print("Puzzle input")
+o2, co2 = get_o2_co2(a)
+print(o2, co2)
+print(o2*co2)
