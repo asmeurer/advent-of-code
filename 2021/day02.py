@@ -1028,17 +1028,46 @@ def move(positions):
 
     return x, y
 
+def move2(positions):
+    x, y, aim = 0, 0, 0
+
+    for dir, X in positions:
+        if dir == 'forward':
+            x += X
+            y += aim*X
+        elif dir == 'down':
+            aim += X
+        elif dir == 'up':
+            aim -= X
+        else:
+            raise ValueError(f"Invalid direction {dir}")
+
+    return x, y
+
 print("Day 2")
 print("Part 1")
+print("Test input")
 test_positions = parse_positions(test_input)
 print(test_positions)
 test_x, test_y = move(test_positions)
 print(test_x, test_y)
 print(test_x*test_y)
 
-print("Part 2")
+print("Puzzle input")
 positions = parse_positions(puzzle_input)
-print(positions)
+# print(positions)
 x, y = move(positions)
+print(x, y)
+print(x*y)
+
+print("Part 2")
+print("Test input")
+test_positions = parse_positions(test_input)
+test_x, test_y = move2(test_positions)
+print(test_x, test_y)
+print(test_x*test_y)
+
+print("Puzzle input")
+x, y = move2(positions)
 print(x, y)
 print(x*y)
