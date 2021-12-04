@@ -655,6 +655,28 @@ def play(draws, boards):
 
     return played_board, winning_board, draw
 
+def play2(draws, boards):
+    n = boards.shape[0]
+
+    for i in range(1, draws.shape[0]):
+        played_boards = np.isin(boards, draws[:i])
+        rows = np.sum(played_boards, axis=1)
+        cols = np.sum(played_boards, axis=2)
+
+        win = (rows == 5) | (cols == 5)
+
+        num_wins = np.sum(np.sum(win, axis=1) != 0)
+        if num_wins == n - 1:
+            win_idx = (np.sum(win, axis=1) == 0).nonzero()[0]
+        elif num_wins == n:
+            break
+
+    winning_board = boards[win_idx]
+    played_board = played_boards[win_idx]
+    draw = draws[i-1]
+
+    return played_board, winning_board, draw
+
 def score(board, played_board, draw):
     return sum(board[~played_board])*draw
 
@@ -675,6 +697,21 @@ def main():
     print("Puzzle input")
     draws, boards = parse_input(input)
     played_board, winning_board, draw = play(draws, boards)
+    final_score = score(winning_board, played_board, draw)
+    print(final_score)
+
+    print("Part 2")
+    print("Test input")
+    test_played_board, test_winning_board, test_draw = play2(test_draws, test_boards)
+    print(test_played_board)
+    print(test_winning_board)
+    print(test_draw)
+    test_final_score = score(test_winning_board, test_played_board, test_draw)
+    print(test_final_score)
+
+    print("Puzzle input")
+    draws, boards = parse_input(input)
+    played_board, winning_board, draw = play2(draws, boards)
     final_score = score(winning_board, played_board, draw)
     print(final_score)
 
