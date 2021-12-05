@@ -520,7 +520,7 @@ def parse_input(data):
     return np.array([[[int(j) for j in i.split(',')] for i in line.split(' -> ')] for line in
              data.strip().splitlines()])
 
-def draw_lines(lines, debug=False):
+def draw_lines(lines, diagonal=False, debug=False):
     n = np.max(lines) + 1
     nlines = lines.shape[0]
     A = np.zeros((n, n), dtype=int)
@@ -533,8 +533,22 @@ def draw_lines(lines, debug=False):
         elif coords[0, 1] == coords[1, 1]:
             bounds = sorted([coords[0, 0], coords[1, 0]])
             A[np.arange(bounds[0], bounds[1]+1), coords[0, 1]] += 1
+        elif diagonal:
+            x0, y0 = coords[0]
+            x1, y1 = coords[1]
+            if x1 > x0:
+                r1 = np.arange(x0, x1+1)
+            else:
+                r1 = np.arange(x0, x1-1, -1)
+            if y1 > y0:
+                r2 = np.arange(y0, y1+1)
+            else:
+                r2 = np.arange(y0, y1-1, -1)
+
+            assert r1.shape == r2.shape, (coords, r1, r2)
+            A[r1, r2] += 1
         else:
-            # Note a horizontal or vertical line
+            # Not a horizontal or vertical line
             if debug:
                 print("Skipping", coords)
             continue
@@ -554,3 +568,13 @@ lines = parse_input(input)
 drawn = draw_lines(lines)
 print(drawn.T)
 print(np.sum(drawn >= 2))
+
+print("Part 2")
+print("Test input")
+test_drawn2 = draw_lines(test_lines, diagonal=True)
+print(test_drawn2.T)
+print(np.sum(test_drawn2 >= 2))
+print("Puzzle input")
+drawn2 = draw_lines(lines, diagonal=True)
+print(drawn2.T)
+print(np.sum(drawn2 >= 2))
