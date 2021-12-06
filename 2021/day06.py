@@ -37,3 +37,10 @@ for i in range(1, 6):
     print("day", i, increment_ndays(a, i))
 print("total after 18 days", increment_ndays(a, 18).sum())
 print("total after 80 days", increment_ndays(a, 80).sum())
+
+print("Part 2")
+print("Test input")
+print("total after 265 days", increment_ndays(test_a, 256).sum())
+
+print("Puzzle input")
+print("total after 265 days", increment_ndays(a, 256).sum())
