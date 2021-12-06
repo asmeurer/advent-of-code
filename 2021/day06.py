@@ -44,3 +44,26 @@ print("total after 265 days", increment_ndays(test_a, 256).sum())
 
 print("Puzzle input")
 print("total after 265 days", increment_ndays(a, 256).sum())
+
+print("Alternate solution")
+M = np.array([[0, 1, 0, 0, 0, 0, 0, 0, 0],
+              [0, 0, 1, 0, 0, 0, 0, 0, 0],
+              [0, 0, 0, 1, 0, 0, 0, 0, 0],
+              [0, 0, 0, 0, 1, 0, 0, 0, 0],
+              [0, 0, 0, 0, 0, 1, 0, 0, 0],
+              [0, 0, 0, 0, 0, 0, 1, 0, 0],
+              [1, 0, 0, 0, 0, 0, 0, 1, 0],
+              [0, 0, 0, 0, 0, 0, 0, 0, 1],
+              [1, 0, 0, 0, 0, 0, 0, 0, 0]])
+print("Test input")
+print(M@test_a)
+print(np.sum(np.linalg.matrix_power(M, 18)@test_a))
+print("Part 1")
+print(np.sum(np.linalg.matrix_power(M, 80)@test_a))
+print("Part 2")
+print(np.sum(np.linalg.matrix_power(M, 256)@test_a))
+print("Puzzle input")
+print("Part 1")
+print(np.sum(np.linalg.matrix_power(M, 80)@a))
+print("Part 2")
+print(np.sum(np.linalg.matrix_power(M, 256)@a))
