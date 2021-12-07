@@ -44,3 +44,46 @@ a = parse_input(input)
 x, val = minimize(a, norm='triangle')
 print(x)
 print(val)
+
+print("Alternate solution")
+# tanh(x/2) is a smooth sigmoid that approximates the derivative of abs(x)
+from sympy import symbols, tanh, nsolve, Add, floor, ceiling
+x = symbols('x')
+
+print("Part 1")
+print("Test input")
+test_func1 = Add(*(abs(x - i) for i in test_a))
+test_dfunc1 = Add(*(tanh((x - i)/2) for i in test_a))
+test_res1 = nsolve(test_dfunc1, 2)
+print(test_res1)
+test_x1 = (floor(test_res1), ceiling(test_res1))
+test_y1 = {y: test_func1.subs(x, y) for y in test_x1}
+print(min(test_y1.items(), key=lambda i: i[1]))
+
+print("Puzzle Input")
+func1 = Add(*(abs(x - i) for i in a))
+dfunc1 = Add(*(tanh((x - i)/2) for i in a))
+res1 = nsolve(dfunc1, 300)
+print(res1)
+x1 = (floor(res1), ceiling(res1))
+y1 = {y: func1.subs(x, y) for y in x1}
+print(min(y1.items(), key=lambda i: i[1]))
+
+print("Part 2")
+print("Test Input")
+test_func2 = Add(*((abs(x - i) + (x - i)**2)/2 for i in test_a))
+test_dfunc2 = Add(*((tanh((x - i)/2) + ((x - i)**2).diff(x))/2 for i in test_a))
+test_res2 = nsolve(test_dfunc2, 2)
+print(test_res2)
+test_x2 = (floor(test_res2), ceiling(test_res2))
+test_y2 = {y: test_func2.subs(x, y) for y in test_x2}
+print(min(test_y2.items(), key=lambda i: i[1]))
+
+print("Puzzle Input")
+func2 = Add(*((abs(x - i) + (x - i)**2)/2 for i in a))
+dfunc2 = Add(*((tanh((x - i)/2) + ((x - i)**2).diff(x))/2 for i in a))
+res2 = nsolve(dfunc2, 400)
+print(res2)
+x2 = (floor(res2), ceiling(res2))
+y2 = {y: func2.subs(x, y) for y in x2}
+print(min(y2.items(), key=lambda i: i[1]))
