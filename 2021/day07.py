@@ -8,9 +8,17 @@ from scipy.optimize import minimize_scalar
 def parse_input(data):
     return np.array([int(i) for i in data.split(',')])
 
-def minimize(a):
-    res = minimize_scalar(lambda i: np.linalg.norm(a - i, 1))
-    return (int(np.round(res.x)), int(np.round(res.fun)))
+def minimize(a, norm=1):
+    if norm == 1:
+        f = lambda i: np.linalg.norm(a - i, 1)
+    elif norm == 'triangle':
+        f = lambda i: (np.linalg.norm(a - i, 2)**2 + np.linalg.norm(a - i, 1))/2
+    else:
+        raise ValueError(f"Bad norm: {norm!r}")
+
+    res = minimize_scalar(f, method="Golden")
+    x = int(np.round(res.x))
+    return (x, int(np.round(f(x))))
 
 print("Day 7")
 print("Part 1")
@@ -22,5 +30,17 @@ print(test_val)
 print("Puzzle input")
 a = parse_input(input)
 x, val = minimize(a)
+print(x)
+print(val)
+
+print("Part 2")
+print("Test input")
+test_a = parse_input(test_input)
+test_x, test_val = minimize(test_a, norm='triangle')
+print(test_x)
+print(test_val)
+print("Puzzle input")
+a = parse_input(input)
+x, val = minimize(a, norm='triangle')
 print(x)
 print(val)
