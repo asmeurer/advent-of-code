@@ -128,7 +128,13 @@ def basins(a):
     A[1:-1, 1:-1] = a
     d0 = np.diff(np.sign(np.diff(A, axis=0)), axis=0)[:, 1:-1]
     d1 = np.diff(np.sign(np.diff(A, axis=1)), axis=1)[1:-1]
+    # d0 = np.diff(2*(np.diff(A, axis=0) >= 0) + 1, axis=0)[:, 1:-1]
+    # d1 = np.diff(2*(np.diff(A, axis=1) >= 0) + 1, axis=1)[1:-1]
     b = np.asarray((d0 >= 0) & (d1 >= 0) & (a != 9), dtype=int)
+    # Every non-9 must be part of a basin, but the above algorithm will leave
+    # "holes" wherever there are parts that don't flow downhill in all
+    # directions, even if all those directions are part of the same basin.
+    b[(scipy.ndimage.binary_fill_holes(b) & (a != 9))] = 1
     l, n = scipy.ndimage.measurements.label(b)
     return l, n
 
