@@ -110,6 +110,7 @@ input = """
 """
 
 import numpy as np
+import scipy.ndimage
 
 def parse_input(data):
     return np.array([[int(i) for i in line] for line in
@@ -118,9 +119,21 @@ def parse_input(data):
 def sinks(a):
     A = np.full((a.shape[0] + 2, a.shape[1] + 2), 10)
     A[1:-1, 1:-1] = a
-    d0 = np.diff(np.sign(np.diff(A, axis=0)), axis=0)
-    d1 = np.diff(np.sign(np.diff(A, axis=1)), axis=1)
-    return a[(d0[:, 1:-1] > 0) & (d1[1:-1] > 0)]
+    d0 = np.diff(np.sign(np.diff(A, axis=0)), axis=0)[:, 1:-1]
+    d1 = np.diff(np.sign(np.diff(A, axis=1)), axis=1)[1:-1]
+    return a[(d0 > 0) & (d1 > 0)]
+
+def basins(a):
+    A = np.full((a.shape[0] + 2, a.shape[1] + 2), 10)
+    A[1:-1, 1:-1] = a
+    d0 = np.diff(np.sign(np.diff(A, axis=0)), axis=0)[:, 1:-1]
+    d1 = np.diff(np.sign(np.diff(A, axis=1)), axis=1)[1:-1]
+    b = np.asarray((d0 >= 0) & (d1 >= 0) & (a != 9), dtype=int)
+    l, n = scipy.ndimage.measurements.label(b)
+    return l, n
+
+def basin_sizes(l, n):
+    return np.sort(np.sum(np.equal.outer(l, np.arange(1, n+1)), axis=(0, 1)))
 
 print("Day 9")
 print("Part 1")
@@ -136,7 +149,19 @@ s = sinks(a)
 print(s)
 print(np.sum(s + 1))
 
-# print("Part 2")
-# print("Test input")
-#
-# print("Puzzle input")
+print("Part 2")
+print("Test input")
+test_l, test_n = basins(test_a)
+print(test_n, "basins")
+print(test_l)
+test_sizes = basin_sizes(test_l, test_n)
+print(test_sizes)
+print(np.prod(test_sizes[-3:]))
+
+print("Puzzle input")
+l, n = basins(a)
+print(n, "basins")
+print(l[:20, :20])
+sizes = basin_sizes(l, n)
+print(sizes)
+print(np.prod(sizes[-3:]))
