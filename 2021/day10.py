@@ -197,7 +197,7 @@ def part2(lines, debug=False):
         scores.append(s)
     if debug:
         print(scores)
-    return median(scores)
+    return int(median(scores))
 
 print("Day 10")
 print("Part 1")
