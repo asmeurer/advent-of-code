@@ -217,7 +217,9 @@ af cegbfa bfca egdabf aef bgeac cfaeg caebdg gdecf gcfebda | ecgfd ebfacg bcage 
 
 def parse_input(data):
     lines = data.strip().splitlines()
-    signals = [[frozenset(map(frozenset, i.split())) for i in line.split(' | ')] for line in lines]
+    splitlines = [line.split(' | ') for line in lines]
+    signals = [(frozenset(map(frozenset, line[0].split())),
+                [frozenset(i) for i in line[1].split()]) for line in splitlines]
     return signals
 
 def part1(signals):
@@ -287,19 +289,27 @@ def disambiguate(signal):
     assert len(de) == 2
     D = [i for i in de if i in d[4]]
     assert len(D) == 1
-    n0 = [i for i in n09 if D[0] in i]
-    assert len(n0) == 1, (n09, d[4])
-    d[0] = n0[0]
-    n9 = [i for i in n09 if i != d[0]]
-    assert len(n9) == 1
+    n9 = [i for i in n09 if D[0] in i]
+    assert len(n9) == 1, (n09, d[4])
     d[9] = n9[0]
-    return d
+    n0 = [i for i in n09 if i != d[9]]
+    assert len(n0) == 1
+    d[0] = n0[0]
+
+    return {v: k for k, v in d.items()}
 
 def part2(signals, debug=False):
+    res = []
     for signal, out in signals:
         d = disambiguate(signal)
         if debug:
             print(d)
+
+        outval = int(''.join(map(str, [d[i] for i in out])))
+        if debug:
+            print(outval)
+        res.append(outval)
+    return res
 
 print("Day 8")
 print("Part 1")
@@ -312,4 +322,9 @@ print(part1(signals))
 
 print("Part 2")
 print("Test input")
-res = part2(test_signals, debug=True)
+test_res = part2(test_signals, debug=True)
+print(sum(test_res[1:]))
+
+print("Puzzle input")
+res = part2(signals, debug=False)
+print(sum(res))
