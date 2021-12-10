@@ -217,11 +217,89 @@ af cegbfa bfca egdabf aef bgeac cfaeg caebdg gdecf gcfebda | ecgfd ebfacg bcage 
 
 def parse_input(data):
     lines = data.strip().splitlines()
-    signals = [[tuple(i.split()) for i in line.split(' | ')] for line in lines]
+    signals = [[frozenset(map(frozenset, i.split())) for i in line.split(' | ')] for line in lines]
     return signals
 
 def part1(signals):
     return sum((len(i) in [2, 3, 4, 7] for signal, out in signals for i in out))
+
+def disambiguate(signal):
+    # Just solve the puzzle by hand.
+
+    #       0:      1:      2:      3:      4:
+    #  aaaa    ....    aaaa    aaaa    ....
+    # b    c  .    c  .    c  .    c  b    c
+    # b    c  .    c  .    c  .    c  b    c
+    #  ....    ....    dddd    dddd    dddd
+    # e    f  .    f  e    .  .    f  .    f
+    # e    f  .    f  e    .  .    f  .    f
+    #  gggg    ....    gggg    gggg    ....
+    #
+    #   5:      6:      7:      8:      9:
+    #  aaaa    aaaa    aaaa    aaaa    aaaa
+    # b    .  b    .  .    c  b    c  b    c
+    # b    .  b    .  .    c  b    c  b    c
+    #  dddd    dddd    ....    dddd    dddd
+    # .    f  e    f  .    f  e    f  .    f
+    # .    f  e    f  .    f  e    f  .    f
+    #  gggg    gggg    ....    gggg    gggg
+    d = {}
+
+    # First the 4 numbers which have a unique number of segments
+    n1 = [i for i in signal if len(i) == 2]
+    n7 = [i for i in signal if len(i) == 3]
+    n4 = [i for i in signal if len(i) == 4]
+    n8 = [i for i in signal if len(i) == 7]
+    assert len(n1) == len(n7) == len(n4) == len(n8) == 1
+    d[1] = n1[0]
+    d[7] = n7[0]
+    d[4] = n4[0]
+    d[8] = n8[0]
+
+    # 2, 5, 6  is the numbers that have only one of the two segments from 1.
+    # Of these, 2 has one of the segments (c) and 5 and 6 have the other (f).
+    c, f = d[1]
+    n2x = [i for i in signal if c in i and f not in i]
+    n2y = [i for i in signal if c not in i and f in i]
+    assert len(n2x) == 1 or len(n2y) == 1
+    assert len(n2x) == 2 or len(n2y) == 2
+    n2, n56 = sorted((n2x, n2y), key=len)
+    d[2] = n2[0]
+    # The other two are 5 and 6. 5 is the one with 5 segments and 6 is the one
+    # with 6 segments.
+    assert {len(i) for i in n56} == {5, 6}
+    d[5], d[6] = sorted(n56, key=len)
+
+    # Remaining are 0, 3, and 9. 3 is the unique one with 5 segments.
+    assert len(d) == 7
+    assert len(set(d.values())) == 7, d
+    remainder = signal - frozenset(d.values())
+    assert len(remainder) == 3, remainder
+    n3 = [i for i in remainder if len(i) == 5]
+    assert len(n3) == 1
+    d[3] = n3[0]
+
+    # 0 has e and not d and 9 has d and not e. We can disambiguate these with
+    # any number that also has one but not the other, e.g., 4 has d and not e.
+    n09 = [i for i in remainder if len(i) == 6]
+    assert len(n09) == 2
+    de = n09[0].symmetric_difference(n09[1])
+    assert len(de) == 2
+    D = [i for i in de if i in d[4]]
+    assert len(D) == 1
+    n0 = [i for i in n09 if D[0] in i]
+    assert len(n0) == 1, (n09, d[4])
+    d[0] = n0[0]
+    n9 = [i for i in n09 if i != d[0]]
+    assert len(n9) == 1
+    d[9] = n9[0]
+    return d
+
+def part2(signals, debug=False):
+    for signal, out in signals:
+        d = disambiguate(signal)
+        if debug:
+            print(d)
 
 print("Day 8")
 print("Part 1")
@@ -231,3 +309,7 @@ print(test_signals)
 print(part1(test_signals[1:]))
 signals = parse_input(input)
 print(part1(signals))
+
+print("Part 2")
+print("Test input")
+res = part2(test_signals, debug=True)
