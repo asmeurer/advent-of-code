@@ -126,8 +126,8 @@ def sinks(a):
 def basins(a):
     A = np.full((a.shape[0] + 2, a.shape[1] + 2), 10)
     A[1:-1, 1:-1] = a
-    d0 = np.diff(np.sign(np.diff(A, axis=0)), axis=0)[:, 1:-1]
-    d1 = np.diff(np.sign(np.diff(A, axis=1)), axis=1)[1:-1]
+    d0 = np.diff(A, axis=0, n=2)[:, 1:-1]
+    d1 = np.diff(A, axis=1, n=2)[1:-1]
     # d0 = np.diff(2*(np.diff(A, axis=0) >= 0) + 1, axis=0)[:, 1:-1]
     # d1 = np.diff(2*(np.diff(A, axis=1) >= 0) + 1, axis=1)[1:-1]
     b = np.asarray((d0 >= 0) & (d1 >= 0) & (a != 9), dtype=int)
