@@ -80,6 +80,14 @@ def do_steps(a, n):
         flashes += np.sum(a == 0)
     return flashes
 
+def find_sync(a):
+    n = 0
+    while True:
+        if np.all(a == 0):
+            return n
+        n += 1
+        a = step(a)
+
 print("Day 11")
 print("Part 1")
 print("Test input")
@@ -112,3 +120,25 @@ print("Puzzle input")
 a = parse_input(input)
 flashes100 = do_steps(a, 100)
 print(flashes100)
+
+print("Part 2")
+print("Test input")
+test_a = parse_input(test_input)
+for i in range(192):
+    test_a = step(test_a)
+print("Test step 193")
+test_a = step(test_a)
+print(test_a)
+print("Test step 194")
+test_a = step(test_a)
+print(test_a)
+print("Test step 195")
+test_a = step(test_a)
+print(test_a)
+
+test_a = parse_input(test_input)
+print(find_sync(test_a))
+
+print("Puzzle input")
+a = parse_input(input)
+print(find_sync(a))
