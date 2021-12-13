@@ -837,8 +837,8 @@ all_folds = fold_all(a, inst)
 print_a(all_folds)
 
 
-print("Part 2??")
-print("Test input")
-print(np.sum(test_all_folds))
-print("Puzzle input")
-print(np.sum(all_folds))
+# print("Part 2??")
+# print("Test input")
+# print(np.sum(test_all_folds))
+# print("Puzzle input")
+# print(np.sum(all_folds))
