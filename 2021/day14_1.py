@@ -199,6 +199,8 @@ assert test_e3.tostr() == 'NBBBCNCCNBBNBNBBCHBHHBCHB'
 test_e4 = apply_rules(test_e3, test_rules)
 print(test_e4.tostr())
 assert test_e4.tostr() == 'NBBNBNBBCCNBCNCCNBBNBBNBBBNBBNBBCBHCBHHNHCBBCBHCB'
+test_e5 = apply_rules(test_e4, test_rules)
+print('test step 5', test_e5.tostr())
 test_e10 = apply_rules_n_times(test_e, test_rules, 10)
 print(test_e10.tostr())
 print(part1(test_e10))
