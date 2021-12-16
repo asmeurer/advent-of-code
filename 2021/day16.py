@@ -100,6 +100,24 @@ def version_sum(packets):
             A += version_sum(p.rest)
     return A
 
+operators = {
+    0: lambda *x: sum(x),
+    1: lambda *x: prod(x),
+    2: min,
+    3: max,
+    5: lambda x, y: int(x > y),
+    6: lambda x, y: int(x < y),
+    7: lambda x, y: int(x == y),
+}
+
+def evaluate(packet):
+    if isinstance(packet, literal_packet):
+        return packet.val
+    elif isinstance(packet, operator_packet):
+        return operators[packet.type](*[evaluate(p) for p in packet.rest])
+    else:
+        raise TypeError(f"Invalid packet type: {type(packet)}")
+
 print("Day 16")
 print("Part 1")
 print("Test inputs")
@@ -110,6 +128,14 @@ test_bits4 = parse_input(test_input4)
 test_bits5 = parse_input(test_input5)
 test_bits6 = parse_input(test_input6)
 test_bits7 = parse_input(test_input7)
+test_bits8 = parse_input(test_input8)
+test_bits9 = parse_input(test_input9)
+test_bits10 = parse_input(test_input10)
+test_bits11 = parse_input(test_input11)
+test_bits12 = parse_input(test_input12)
+test_bits13 = parse_input(test_input13)
+test_bits14 = parse_input(test_input14)
+test_bits15 = parse_input(test_input15)
 
 test_packets1 = parse_bits(test_bits1)
 print(test_packets1)
@@ -139,3 +165,58 @@ bits = parse_input(input)
 packets = parse_bits(bits)
 pprint(packets)
 print(version_sum(packets))
+
+print("Part 2")
+print("Test input")
+
+print(test_input8)
+test_packets8 = parse_bits(test_bits8)
+pprint(test_packets8)
+test_packets8_val = evaluate(test_packets8[0])
+print(test_packets8_val)
+
+print(test_input9)
+test_packets9 = parse_bits(test_bits9)
+pprint(test_packets9)
+test_packets9_val = evaluate(test_packets9[0])
+print(test_packets9_val)
+
+print(test_input10)
+test_packets10 = parse_bits(test_bits10)
+pprint(test_packets10)
+test_packets10_val = evaluate(test_packets10[0])
+print(test_packets10_val)
+
+print(test_input11)
+test_packets11 = parse_bits(test_bits11)
+pprint(test_packets11)
+test_packets11_val = evaluate(test_packets11[0])
+print(test_packets11_val)
+
+print(test_input12)
+test_packets12 = parse_bits(test_bits12)
+pprint(test_packets12)
+test_packets12_val = evaluate(test_packets12[0])
+print(test_packets12_val)
+
+print(test_input13)
+test_packets13 = parse_bits(test_bits13)
+pprint(test_packets13)
+test_packets13_val = evaluate(test_packets13[0])
+print(test_packets13_val)
+
+print(test_input14)
+test_packets14 = parse_bits(test_bits14)
+pprint(test_packets14)
+test_packets14_val = evaluate(test_packets14[0])
+print(test_packets14_val)
+
+print(test_input15)
+test_packets15 = parse_bits(test_bits15)
+pprint(test_packets15)
+test_packets15_val = evaluate(test_packets15[0])
+print(test_packets15_val)
+
+print("Puzzle input")
+packets_val = evaluate(packets[0])
+print(packets_val)
