@@ -182,6 +182,8 @@ def astar(start, end, G, print_graph=False):
                 if print_graph:
                     print_path(path(neighbor, camefrom), G, frontier=h_neighbor)
                     print()
+                # Uncomment this to use pure Dijkstra (very slow)
+                # h_neighbor = 0
                 fscore[neighbor] = tenative_gscore + h_neighbor
                 if neighbor not in openset:
                     heapq.heappush(openset, (h_neighbor, neighbor))
