@@ -52,7 +52,8 @@ def parse_bits(bits):
             L = int(bits[i:i+11], 2)
             i += 11
             more = parse_bits(bits[i:])
-            rest = more
+            rest, more = more[:L], more[L:]
+            packet.extend(more)
         else:
             raise ValueError(f"Unexpected ID: {ID}")
         packet.append(operator_packet(version, typ, ID, L, rest))
