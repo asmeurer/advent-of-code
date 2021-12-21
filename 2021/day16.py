@@ -45,8 +45,8 @@ def parse_input(data):
     res = [hex_map[i] for i in data]
     return ''.join(res)
 
-literal_packet = namedtuple('literal_packet', ['version', 'type', 'val'])
-operator_packet = namedtuple('operator_packet', ['version', 'type', 'ID', 'L', 'rest'])
+literal_packet = namedtuple('literal', ['version', 'type', 'val'])
+operator_packet = namedtuple('operator', ['version', 'type', 'ID', 'L', 'rest'])
 
 def parse_bits(bits):
     packet = []
@@ -74,15 +74,16 @@ def parse_bits(bits):
             L = int(bits[i:i+15], 2)
             i += 15
             rest = parse_bits(bits[i:i+L])
+            packet.append(operator_packet(version, typ, ID, L, rest))
         elif ID == 1:
             L = int(bits[i:i+11], 2)
             i += 11
             more = parse_bits(bits[i:])
             rest, more = more[:L], more[L:]
+            packet.append(operator_packet(version, typ, ID, L, rest))
             packet.extend(more)
         else:
             raise ValueError(f"Unexpected ID: {ID}")
-        packet.append(operator_packet(version, typ, ID, L, rest))
         if ID == 0 and '1' in bits[i+L:]:
             packet.extend(parse_bits(bits[i+L:]))
 
@@ -103,12 +104,30 @@ def version_sum(packets):
 operators = {
     0: lambda *x: sum(x),
     1: lambda *x: prod(x),
-    2: min,
-    3: max,
+    2: lambda *x: min(x),
+    3: lambda *x: max(x),
     5: lambda x, y: int(x > y),
     6: lambda x, y: int(x < y),
     7: lambda x, y: int(x == y),
 }
+
+operator_names = {
+    0: 'sum',
+    1: 'prod',
+    2: 'min',
+    3: 'max',
+    5: 'greater',
+    6: 'less',
+    7: 'equal',
+}
+
+def operator_str(packet):
+    if isinstance(packet, literal_packet):
+        return str(packet.val)
+    elif isinstance(packet, operator_packet):
+        return f"{operator_names[packet.type]}({', '.join([operator_str(p) for p in packet.rest])})"
+    else:
+        raise TypeError(f"Invalid packet type: {type(packet)}")
 
 def evaluate(packet):
     if isinstance(packet, literal_packet):
@@ -214,9 +233,11 @@ print(test_packets14_val)
 print(test_input15)
 test_packets15 = parse_bits(test_bits15)
 pprint(test_packets15)
+print(operator_str(test_packets15[0]))
 test_packets15_val = evaluate(test_packets15[0])
 print(test_packets15_val)
 
 print("Puzzle input")
+print(operator_str(packets[0]))
 packets_val = evaluate(packets[0])
 print(packets_val)
