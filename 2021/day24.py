@@ -268,8 +268,13 @@ add z y
 """
 
 import itertools
+from functools import lru_cache
 
-from sympy import symbols, Function, Integer, Symbol, Add, Mul, S, Tuple
+from sympy import (symbols, Function, Integer, Symbol, Add, Mul, S, Tuple,
+                   cse, lambdify)
+from sympy.printing.lambdarepr import LambdaPrinter
+
+from numba import njit
 
 def parse_input(data):
     instructions = []
@@ -331,6 +336,8 @@ class FloorDivide(Function):
             else:
                 return x//y
 
+        if y == 1:
+            return x
         # if isinstance(x, Add):
         #     return x.func(*[FloorDivide(i, y) for i in x.args])
 
@@ -433,13 +440,65 @@ def part1(instructions):
         if res['z'] == 0:
             return N
 
+class CustomPrinter(LambdaPrinter):
+    def _print_Equal(self, expr):
+        x, y = expr.args
+        return f"int({self._print(x)} == {self._print(y)})"
+
+    def _print_FloorDivide(self, expr):
+        x, y = expr.args
+        return f"({self._print(x)} // {self._print(y)})"
+
+    def _print_Mod(self, expr):
+        x, y = expr.args
+        return f"({self._print(x)} % {self._print(y)})"
+
+# modules = {"Equal": lambda x, y: int(x == y),
+#            "FloorDivide": lambda x, y: x//y,
+#            "Mod": lambda x, y: x % y,
+#            }
+
+
+def inner_lambdify(variables, expr):
+    # Cache only the free variables in the subexpression. Otherwise caching
+    # cannot work.
+    free_vars = sorted(expr.free_symbols, key=variables.index)
+    mapping = [variables.index(i) for i in free_vars]
+
+    f = lru_cache(None)(njit(lambdify(free_vars, expr, printer=CustomPrinter)))
+    return lambda *vars: f(*[vars[i] for i in mapping])
+
 def part1_sympy(sympy_z, inputs):
+    print("Computing CSE")
+    repls, [expr] = cse(sympy_z)
+    print(repls)
+    print(expr)
+    vars = list(inputs)
+    funcs = {}
+
+    for x, subexpr in repls:
+        funcs[x] = inner_lambdify(vars, subexpr)
+        vars.append(x)
+
+    final_func = lambdify(vars, expr, printer=CustomPrinter)
+
     for vals in itertools.product(*[range(9, 0, -1)]*len(inputs)):
-        s = list(zip(inputs, vals))
-        res = sympy_z.subs(s)
-        assert res.is_Integer
+        if vals[6] >= 5:
+            continue
+
+        if all(i == 9 for i in vals[10:]):
+            print(vals)
+
+        vals = list(vals)
+        for v in vars[14:]:
+            vals.append(funcs[v](*vals))
+
+        res = final_func(*vals)
+
+        # Uncomment to double check the answer
+        # assert res == sympy_z.subs(list(zip(inputs, vals)))
         if res == 0:
-            return s
+            return vals
 
 if __name__ == '__main__':
     print("Day 24")
@@ -460,30 +519,34 @@ if __name__ == '__main__':
     # print(N)
 
     inputs = Tuple(*[symbols('input_%s' % i, integer=True, positive=True) for i in range(14)])
-    inputs = inputs.subs({
-        # inputs[0]: 9,
-        # inputs[1]: 9,
-        # inputs[2]: 9,
-        # inputs[3]: 9,
-        # inputs[4]: 9,
-        # inputs[5]: 9,
-        # inputs[6]: 9,
-        # inputs[7]: 9,
-        # inputs[8]: 9,
-        # inputs[9]: 9,
-        # inputs[10]: 9,
-        # inputs[11]: 9,
-        # inputs[12]: 9,
-        # inputs[13]: 9,
-    })
+    # inputs = inputs.subs({
+    #     # inputs[0]: 9,
+    #     # inputs[1]: 9,
+    #     # inputs[2]: 9,
+    #     # inputs[3]: 9,
+    #     # inputs[4]: 9,
+    #     # inputs[5]: 9,
+    #     # inputs[6]: 9,
+    #     # inputs[7]: 9,
+    #     # inputs[8]: 9,
+    #     # inputs[9]: 9,
+    #     # inputs[10]: 9,
+    #     # inputs[11]: 9,
+    #     # inputs[12]: 9,
+    #     # inputs[13]: 9,
+    # })
+    print("Computing expression")
     sympy_instructions = run_sympy(instructions, inputs)
     expr = sympy_instructions['z']
-    print(expr)
-    free_inputs = sorted(expr.free_symbols, key=lambda i:
-                         inputs.index(i))
-    print(free_inputs)
-    ans = part1_sympy(expr, free_inputs)
-    print(ans)
-    res = ''.join([str(i) for i in inputs.subs(ans).subs({i: 9 for i in inputs})])
-    print(res)
-    print(run(instructions, [int(i) for i in res]))
+    # print(expr)
+    ans = part1_sympy(expr, inputs)
+    print(''.join([str(i) for i in ans[:14]]))
+
+    # free_inputs = sorted(expr.free_symbols, key=lambda i:
+    #                      inputs.index(i))
+    # print(free_inputs)
+    # ans = part1_sympy(expr, free_inputs)
+    # print(ans)
+    # res = ''.join([str(i) for i in inputs.subs(ans).subs({i: 9 for i in inputs})])
+    # print(res)
+    # print(run(instructions, [int(i) for i in res]))
