@@ -269,6 +269,9 @@ add z y
 
 import itertools
 from functools import lru_cache
+import math
+
+import numpy as np
 
 from sympy import (symbols, Function, Integer, Symbol, Add, Mul, S, Tuple,
                    cse, lambdify)
@@ -443,7 +446,7 @@ def part1(instructions):
 class CustomPrinter(LambdaPrinter):
     def _print_Equal(self, expr):
         x, y = expr.args
-        return f"int({self._print(x)} == {self._print(y)})"
+        return f"({self._print(x)} == {self._print(y)})"
 
     def _print_FloorDivide(self, expr):
         x, y = expr.args
@@ -468,37 +471,54 @@ def inner_lambdify(variables, expr):
     f = lru_cache(None)(njit(lambdify(free_vars, expr, printer=CustomPrinter)))
     return lambda *vars: f(*[vars[i] for i in mapping])
 
+# https://stackoverflow.com/questions/11144513/cartesian-product-of-x-and-y-array-points-into-single-array-of-2d-points
+def cartesian_product(*arrays):
+    if len(arrays) == 0:
+        return np.empty((1, 0))
+    la = len(arrays)
+    dtype = np.result_type(*arrays)
+    arr = np.empty([len(a) for a in arrays] + [la], dtype=dtype)
+    for i, a in enumerate(np.ix_(*arrays)):
+        arr[...,i] = a
+    return arr.reshape(-1, la)
+
+def compute_values(variables, expr, vals):
+    free_vars = sorted(expr.free_symbols, key=variables.index)
+    f = njit(lambdify(free_vars, expr,
+                                      printer=CustomPrinter))
+
+    V = [vals[i] for i in free_vars]
+    p = math.prod([len(i) for i in V])
+    print("Inputs:", p)
+
+    # a = np.zeros((p, len(V)), dtype=int)
+    # for i, val in enumerate(itertools.product(*V)):
+    #     a[i] = val
+
+    a = cartesian_product(*V)
+    res = np.asarray(f(*[a[:, i] for i in range(len(V))]), dtype=int)
+    uniq, idxes = np.unique(res, return_index=True)
+    print("Outputs:", len(uniq))
+    values = {}
+    for i, idx in enumerate(idxes):
+        values[uniq[i]] = a[idx]
+    return values
+
 def part1_sympy(sympy_z, inputs):
     print("Computing CSE")
     repls, [expr] = cse(sympy_z)
     print(repls)
     print(expr)
-    vars = list(inputs)
-    funcs = {}
+    variables = list(inputs)
 
-    for x, subexpr in repls:
-        funcs[x] = inner_lambdify(vars, subexpr)
-        vars.append(x)
+    vals = {i: np.arange(9, 0, -1) for i in variables}
+    for x, subexpr in repls + [('final', expr)]:
+        print("Computing subexpression", x)
+        values = compute_values(variables, subexpr, vals)
+        variables.append(x)
+        vals[x] = np.asarray(sorted(values))
 
-    final_func = lambdify(vars, expr, printer=CustomPrinter)
-
-    for vals in itertools.product(*[range(9, 0, -1)]*len(inputs)):
-        if vals[6] >= 5:
-            continue
-
-        if all(i == 9 for i in vals[10:]):
-            print(vals)
-
-        vals = list(vals)
-        for v in vars[14:]:
-            vals.append(funcs[v](*vals))
-
-        res = final_func(*vals)
-
-        # Uncomment to double check the answer
-        # assert res == sympy_z.subs(list(zip(inputs, vals)))
-        if res == 0:
-            return vals
+    return values[0]
 
 if __name__ == '__main__':
     print("Day 24")
