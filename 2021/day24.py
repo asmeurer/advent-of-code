@@ -354,16 +354,13 @@ class Mod(Function):
                 raise ZeroDivisionError("mod with nonpositive inputs")
             return x % y
 
-        if isinstance(x, Symbol) and y.is_Integer and y > 9:
+        if isinstance(x, Symbol) and 'input' in x.name and y.is_Integer and y > 9:
             return x
 
         # if isinstance(x, Add):
         #     coeff, rest = x.as_coeff_Add()
         #     if coeff != 0:
         #         return coeff % y + Mod(rest, y)
-
-        if isinstance(x, (Add, Mul)):
-            return x.func(*[Mod(i, y) for i in x.args])
 
         if isinstance(x, Equal):
             return x
@@ -380,7 +377,7 @@ class Equal(Function):
 
         free_vars = list(x.free_symbols | y.free_symbols)
         possibilities = set()
-        if len(free_vars) <= 4:
+        if len(free_vars) <= 0:
             for vals in itertools.product(*[range(1, 10)]*len(free_vars)):
                 if len(possibilities) == 2:
                     return
@@ -446,7 +443,7 @@ def part1(instructions):
 class CustomPrinter(LambdaPrinter):
     def _print_Equal(self, expr):
         x, y = expr.args
-        return f"({self._print(x)} == {self._print(y)})"
+        return f"int({self._print(x)} == {self._print(y)})"
 
     def _print_FloorDivide(self, expr):
         x, y = expr.args
@@ -482,7 +479,45 @@ def cartesian_product(*arrays):
         arr[...,i] = a
     return arr.reshape(-1, la)
 
-def compute_values(variables, expr, vals):
+
+@njit
+def boolallvals2(f, x1, x2):
+    res = np.zeros((2, 2), dtype=np.int64)
+    for i1 in x1:
+        for i2 in x2:
+            res[int(f(i1, i2))] = np.array([i1, i2])
+    return res
+
+
+@njit
+def boolallvals4(f, x1, x2, x3, x4):
+    res = np.zeros((2, 4), dtype=np.int64)
+    for i1 in x1:
+        for i2 in x2:
+            for i3 in x3:
+                for i4 in x4:
+                    res[int(f(i1, i2, i3, i4))] = np.array([i1, i2, i3, i4])
+    return res
+
+@njit
+def allvals_final3(f, x1, x2, x3):
+    for i1 in x1:
+        for i2 in x2:
+            for i3 in x3:
+                if f(i1, i2, i3) == 0:
+                    return np.array([i1, i2, i3])
+
+@njit
+def allvals_final5(f, x1, x2, x3, x4, x5):
+    for i1 in x1:
+        for i2 in x2:
+            for i3 in x3:
+                for i4 in x4:
+                    for i5 in x5:
+                        if f(i1, i2, i3, i4, i5) == 0:
+                            return np.array([i1, i2, i3, i4, i5])
+
+def compute_values(variables, expr, vals, x):
     free_vars = sorted(expr.free_symbols, key=variables.index)
     f = njit(lambdify(free_vars, expr,
                                       printer=CustomPrinter))
@@ -495,13 +530,38 @@ def compute_values(variables, expr, vals):
     # for i, val in enumerate(itertools.product(*V)):
     #     a[i] = val
 
-    a = cartesian_product(*V)
-    res = np.asarray(f(*[a[:, i] for i in range(len(V))]), dtype=int)
-    uniq, idxes = np.unique(res, return_index=True)
-    print("Outputs:", len(uniq))
+
     values = {}
-    for i, idx in enumerate(idxes):
-        values[uniq[i]] = a[idx]
+
+    if x == 'final':
+        a = [np.asarray(i) for i in V]
+        if len(free_vars) == 3:
+            res = allvals_final3(f, *a)
+        elif len(free_vars) == 5:
+            res = allvals_final5(f, *a)
+        else:
+            raise ValueError(f"cannot handle final expression with {len(free_vars)} variables")
+        values[0] = res
+    elif isinstance(expr, Equal):
+        a = [np.asarray(i) for i in V]
+        if len(free_vars) == 2:
+            print("Equal subexpression (2 variables)")
+            res = boolallvals2(f, *a)
+        elif len(free_vars) == 4:
+            print("Equal subexpression (4 variables)")
+            res = boolallvals4(f, *a)
+        else:
+            raise NotImplementedError(f"bool case not implemented for {len(free_vars)} variables")
+        for i in range(2):
+            if not np.all(res[i] == 0):
+                values[i] = res[i]
+    else:
+        a = cartesian_product(*V)
+        res = np.asarray(f(*[a[:, i] for i in range(len(V))]), dtype=int)
+        uniq, idxes = np.unique(res, return_index=True)
+        for i, idx in enumerate(idxes):
+            values[uniq[i]] = a[idx]
+    print("Outputs:", len(values))
     return values
 
 def part1_sympy(sympy_z, inputs):
@@ -509,16 +569,28 @@ def part1_sympy(sympy_z, inputs):
     repls, [expr] = cse(sympy_z)
     print(repls)
     print(expr)
+
+    assert len(expr.free_symbols) in {3, 5}, len(expr.free_symbols)
+
+    # for x, subexpr in repls:
+    #     if isinstance(subexpr, Equal):
+    #         print("bool", len(subexpr.free_symbols))
+    #     else:
+    #         print("int", len(subexpr.free_symbols))
+    # return
+
     variables = list(inputs)
 
+    values = {}
     vals = {i: np.arange(9, 0, -1) for i in variables}
     for x, subexpr in repls + [('final', expr)]:
         print("Computing subexpression", x)
-        values = compute_values(variables, subexpr, vals)
+        values[x] = compute_values(variables, subexpr, vals, x)
         variables.append(x)
-        vals[x] = np.asarray(sorted(values))
+        vals[x] = np.asarray(sorted(values[x]))
 
-    return values[0]
+    breakpoint()
+    return values
 
 if __name__ == '__main__':
     print("Day 24")
@@ -560,6 +632,7 @@ if __name__ == '__main__':
     expr = sympy_instructions['z']
     # print(expr)
     ans = part1_sympy(expr, inputs)
+    print(ans)
     print(''.join([str(i) for i in ans[:14]]))
 
     # free_inputs = sorted(expr.free_symbols, key=lambda i:
