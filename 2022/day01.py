@@ -15,6 +15,8 @@ test_input = """\
 10000
 """
 
+import heapq
+
 input = open('day01_input').read()
 
 def parse(data):
@@ -27,9 +29,19 @@ def part1(data):
     m = max(elves, key=sum)
     return sum(m)
 
+def part2(data):
+    elves = parse(data)
+    largest = heapq.nlargest(3, elves, key=sum)
+    return sum(map(sum, largest))
+
 print("Day 1")
 print("Part 1")
 print("Test input")
 print(part1(test_input))
 print("Puzzle input")
 print(part1(input))
+print("Part 2")
+print("Test input")
+print(part2(test_input))
+print("Puzzle input")
+print(part2(input))
