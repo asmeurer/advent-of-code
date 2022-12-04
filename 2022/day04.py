@@ -24,6 +24,12 @@ def part1(pairs):
         or p2a >= p1a and p2b <= p1b
     for (p1a, p1b), (p2a, p2b) in pairs)
 
+def part2(pairs):
+    return sum(
+        p1b >= p2a and p1a <= p2b
+     or p2b >= p1a and p2a <= p1b
+        for (p1a, p1b), (p2a, p2b) in pairs)
+
 print("Day 4")
 print("Part 1")
 print("Test input")
@@ -31,4 +37,10 @@ test_pairs = parse_input(test_input)
 pairs = parse_input(input)
 print(test_pairs)
 print(part1(test_pairs))
+print("Puzzle input")
 print(part1(pairs))
+print("Part 1")
+print("Test input")
+print(part2(test_pairs))
+print("Puzzle input")
+print(part2(pairs))
