@@ -39,23 +39,29 @@ def parse_input(data):
 
     return crates, instructions
 
-def move(crates, instruction):
+def move(crates, instruction, flip):
     n, i1, i2 = instruction
     c1, c2 = crates[i1-1], crates[i2-1]
 
-    c1[:], rest = c1[:-n], c1[-n:][::-1]
+    c1[:], rest = c1[:-n], c1[-n:]
+    if flip:
+        rest = rest[::-1]
     c2.extend(rest)
 
-def move_all(crates, instructions, _debug=False):
+def move_all(crates, instructions, flip, _debug=False):
     crates = deepcopy(crates)
     if _debug: print(crates)
     for instruction in instructions:
-        move(crates, instruction)
+        move(crates, instruction, flip)
         if _debug: print(crates)
     return crates
 
 def part1(crates, instructions, _debug=False):
-    crates = move_all(crates, instructions, _debug=_debug)
+    crates = move_all(crates, instructions, True, _debug=_debug)
+    return ''.join([i[-1] for i in crates])
+
+def part2(crates, instructions, _debug=False):
+    crates = move_all(crates, instructions, False, _debug=_debug)
     return ''.join([i[-1] for i in crates])
 
 print("Day 5")
@@ -67,5 +73,13 @@ crates, instructions = parse_input(input)
 print("Test input")
 test_res = part1(test_crates, test_instructions, _debug=True)
 print(test_res)
+print("Puzzle input")
 res = part1(crates, instructions)
+print(res)
+print("Part 2")
+print("Test input")
+test_res = part2(test_crates, test_instructions, _debug=True)
+print(test_res)
+print("Puzzle input")
+res = part2(crates, instructions)
 print(res)
