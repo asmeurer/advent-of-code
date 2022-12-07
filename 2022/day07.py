@@ -82,6 +82,21 @@ def part1(filesystem):
     # print(small_sizes)
     return sum(i for i in sizes.values() if i < 100000)
 
+def part2(filesystem):
+    total_space = 70000000
+    needed_unused = 30000000
+    filesystem_size = dirsize(filesystem)
+    unused = total_space - filesystem_size
+    difference = needed_unused - unused
+
+    sizes = total_sizes(filesystem)
+    for s in sorted(sizes, key=lambda i: sizes[i]):
+        if sizes[s] >= difference:
+            break
+
+    print(s)
+    return sizes[s]
+
 print("Day 7")
 print("Part 1")
 print("Test input")
@@ -100,3 +115,11 @@ filesystem = get_filesystem(input)
 print(dirsize(filesystem))
 print("Answer:")
 print(part1(filesystem))
+
+
+print("Part 2")
+print("Test input")
+print(total_sizes(test_filesystem))
+print(part2(test_filesystem))
+print("Puzzle input")
+print(part2(filesystem))
