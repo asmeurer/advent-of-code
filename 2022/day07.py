@@ -116,7 +116,6 @@ print(dirsize(filesystem))
 print("Answer:")
 print(part1(filesystem))
 
-
 print("Part 2")
 print("Test input")
 print(total_sizes(test_filesystem))
