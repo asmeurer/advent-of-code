@@ -9,6 +9,17 @@ L 5
 R 2
 """
 
+test_input2 = """
+R 5
+U 8
+L 8
+D 3
+R 17
+D 10
+L 25
+U 20
+"""
+
 input = open('day09_input').read()
 
 def parse_input(data):
@@ -58,6 +69,31 @@ def part1(moves, _debug=False):
 
     return len(tail_positions)
 
+def move2(new_head, tail):
+    a, b = new_head
+    x, y = tail
+    if abs(x - a) in {-1, 0, 1} and abs(y - b) in {-1, 0, 1}:
+        new_tail = tail
+    else:
+        new_tail = x - sign(x - a), y - sign(y - b)
+
+    return new_tail
+
+def part2(moves, _debug=False):
+    head, *TAILS = [(0, 0)]*10
+    tail9_positions = {TAILS[-1]}
+    for dir, n in moves:
+        for i in range(n):
+            head, t0 = move(head, TAILS[0], dir)
+            NEW_TAILS = [t0]
+            for t in TAILS[1:]:
+                t = move2(NEW_TAILS[-1], t)
+                NEW_TAILS.append(t)
+
+            TAILS = NEW_TAILS
+            tail9_positions.add(TAILS[-1])
+            if _debug: print(head, *TAILS)
+    return len(tail9_positions)
 
 print("Day 9")
 print("Part 1")
@@ -67,3 +103,11 @@ moves = parse_input(input)
 print(part1(test_moves, _debug=True))
 print("Puzzle input")
 print(part1(moves))
+print("Part 1")
+print("Test input1")
+print(part2(test_moves, _debug=True))
+print("Test input 2")
+test_moves2 = parse_input(test_input2)
+print(part2(test_moves2, _debug=True))
+print("Puzzle input")
+print(part2(moves))
