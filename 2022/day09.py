@@ -40,19 +40,30 @@ def move(head, tail, dir):
 
     a, b = new_head
     x, y = tail
-    if (x, y) == (a, b):
+    if abs(x - a) in {-1, 0, 1} and abs(y - b) in {-1, 0, 1}:
         new_tail = tail
-    elif x == a and (y == b + 1 or y == b - 1):
-        new_tail = tail
-    elif y == b and (x == a + 1 or x == a - 1):
-        new_tail = tail
-    elif x == a:
-        new_tail = x, y - sign(y - b)
-    elif y == b:
-        new_tail = x - sign(x - a), y
     else:
         new_tail = x - sign(x - a), y - sign(y - b)
+
+    return new_head, new_tail
+
+def part1(moves, _debug=False):
+    head, tail = (0, 0), (0, 0)
+    tail_positions = {tail}
+    for dir, n in moves:
+        for i in range(n):
+            head, tail = move(head, tail, dir)
+            tail_positions.add(tail)
+            if _debug: print(head, tail)
+
+    return len(tail_positions)
+
 
 print("Day 9")
 print("Part 1")
 print("Test input")
+test_moves = parse_input(test_input)
+moves = parse_input(input)
+print(part1(test_moves, _debug=True))
+print("Puzzle input")
+print(part1(moves))
