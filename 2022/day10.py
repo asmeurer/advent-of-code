@@ -181,6 +181,17 @@ def part1(cmds):
     print(signal_strengths)
     return sum(signal_strengths)
 
+def part2(cmds):
+    xvals = execute(cmds)
+    for p, x in zip(range(240), xvals[:]):
+        pix = p % 40
+        if pix == 0:
+            print()
+        if pix - x in {-1, 0, 1}:
+            print('# ', end='')
+        else:
+            print(". ", end='')
+
 print("Day 10")
 print("Part 1")
 print("Test input")
@@ -199,3 +210,8 @@ print(test_xvals2[220-1])
 print(part1(test_cmds2))
 print("Puzzle input")
 print(part1(cmds))
+print("Part 2")
+print("Test input")
+part2(test_cmds2)
+print("Puzzle input")
+part2(cmds)
