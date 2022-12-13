@@ -33,7 +33,7 @@ input = open('day11_input').read()
 import re
 from dataclasses import dataclass
 
-from sympy import sympify, symbols
+from sympy import sympify, symbols, lambdify, ilcm
 import numpy as np
 old = symbols('old')
 
@@ -61,19 +61,22 @@ def parse_input(data):
         n, items, operation, test, if_true, if_false = m.groups()
         assert int(n) == len(monkeys)
         monkeys.append(Monkey([int(i) for i in items.split(', ')],
-                              sympify(operation),
+                              lambdify(old, sympify(operation)),
                               int(test),
                               int(if_true),
                               int(if_false)
                               ))
     return monkeys
 
-def turn(monkeys, n):
+def turn(monkeys, n, divide=True, L=None):
     monkey = monkeys[n]
     k = len(monkey.items)
     for item in monkey.items:
-        item = monkey.operation.subs(old, item)
-        item //= 3
+        item = monkey.operation(item)
+        if divide:
+            item //= 3
+        else:
+            item %= L
         if item % monkey.test == 0:
             monkeys[monkey.if_true].items.append(item)
         else:
@@ -81,11 +84,12 @@ def turn(monkeys, n):
     monkey.items.clear()
     return k
 
-def round(monkeys):
+def round(monkeys, divide=True):
     N = len(monkeys)
+    L = ilcm(*[m.test for m in monkeys])
     inspected = np.array([0]*N)
     for n in range(N):
-        inspected[n] += turn(monkeys, n)
+        inspected[n] += turn(monkeys, n, divide=divide, L=L)
     return inspected
 
 def part1(monkeys, _debug=False):
@@ -101,6 +105,21 @@ def part1(monkeys, _debug=False):
     inspected.sort()
     return inspected[-1]*inspected[-2]
 
+def part2(monkeys):
+    N = len(monkeys)
+    inspected = np.array([0]*N)
+    for i in range(10000):
+        inspected += round(monkeys, divide=False)
+        if i % 100 == 0: print(i)
+        if i+1 in [1, 20, 1000, 2000, 3000, 4000, 5000, 6000, 7000,
+                              8000, 9000]:
+            print("Round", i+1)
+            for n, monkey in enumerate(monkeys):
+                print(n, inspected[n])
+    print(inspected)
+    inspected.sort()
+    return inspected[-1]*inspected[-2]
+
 print("Day 11")
 print("Part 1")
 print("Test input")
@@ -111,3 +130,10 @@ print("Puzzle input")
 monkeys = parse_input(input)
 # print(monkeys)
 print(part1(monkeys))
+print("Part 2")
+print("Test input")
+test_monkeys = parse_input(test_input)
+print(part2(test_monkeys))
+print("Puzzle input")
+monkeys = parse_input(input)
+print(part2(monkeys))
