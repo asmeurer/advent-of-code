@@ -71,7 +71,18 @@ def part1(a, start, end):
     dist = dijkstra(a, start, end)
     return int(dist[end])
 
+def part2(a, end):
+    paths = []
+    for start in np.ndindex(*a.shape):
+        if a[start] == 0:
+            try:
+                paths.append(part1(a, start, end))
+            except OverflowError:
+                pass
+    return min(paths)
+
 print("Day 12")
+print("Part 1")
 print("Test input")
 test_a, test_start, test_end = parse_input(test_input)
 print(test_a)
@@ -83,3 +94,8 @@ print("Puzzle input")
 a, start, end = parse_input(input)
 # print(dijkstra(a, start, end))
 print(part1(a, start, end))
+print("Part 2")
+print("Test input")
+print(part2(test_a, test_end))
+print("Puzzle input")
+print(part2(a, end))
