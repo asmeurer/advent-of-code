@@ -40,7 +40,7 @@ def parse_input(data):
 
     return rocks
 
-def print_rocks(rocks):
+def print_rocks(rocks, clear=True):
     xs = [x for x, y in rocks]
     ys = [y for x, y in rocks]
     minx, maxx = min(xs), max(xs)
@@ -57,7 +57,7 @@ def print_rocks(rocks):
             elif rocks[x, y] == 1:
                 line += '# '
             elif rocks[x, y] == 2:
-                line += '+ '
+                line += 'o '
             else:
                 raise ValueError(f"Unexpected value: {x, y, rocks[x, y]}")
         lines.append(line)
@@ -65,8 +65,9 @@ def print_rocks(rocks):
     l = len(lines[0])
     lines.insert(0, "   {minx:<l}{maxx:>l}".replace('l', str((l - 2)//2)).format(minx=minx, maxx=maxx))
     print('\n'.join(lines))
-    sys.stdout.flush()
-    subprocess.run('clear')
+    if clear:
+        sys.stdout.flush()
+        subprocess.run('clear')
 
 def fall(rocks, sand):
     x, y = sand
@@ -98,13 +99,53 @@ def part1(rocks):
         i += 1
     return i
 
+def fall2(rocks, sand, maxy):
+    x, y = sand
+    assert rocks[x, y] == 2
+    for coord in [(x, y + 1), (x - 1, y + 1), (x + 1, y + 1)]:
+        if coord[1] >= maxy:
+            rocks[coord[0], maxy+2] = 1
+        if rocks[coord] == 0:
+            rocks[sand] = 0
+            rocks[coord] = 2
+            return coord
+    return sand
+
+def fall_till_rest2(rocks, maxy):
+    sand = sand1
+    rocks[sand] = 2
+    while sand != (sand := fall2(rocks, sand, maxy)):
+        pass
+        # print_rocks(rocks)
+    if sand == sand1:
+        return False
+    # print_rocks(rocks)
+    return True
+
+def part2(rocks):
+    maxy = max([y for x, y in rocks])
+
+    i = 1
+    while fall_till_rest2(rocks, maxy):
+        i += 1
+        if i % 20 == 0:
+            print_rocks(rocks, clear=False)
+    return i
+
 print("Day 14")
 print("Part 1")
 print("Test input")
 test_rocks = parse_input(test_input)
-print_rocks(test_rocks)
-print(part1(test_rocks), "steps")
+# print_rocks(test_rocks)
+# print(part1(test_rocks), "steps")
 print("Puzzle input")
 rocks = parse_input(input)
-print_rocks(rocks)
-print(part1(rocks), "steps")
+# print_rocks(rocks)
+# print(part1(rocks), "steps")
+print("Part 2")
+print("Test input")
+test_rocks = parse_input(test_input)
+print(part2(test_rocks), "steps")
+print("Puzzle input")
+rocks = parse_input(input)
+print(part2(rocks), "steps")
