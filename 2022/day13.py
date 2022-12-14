@@ -63,6 +63,16 @@ def part1(packets):
     print(right_order)
     return sum(i + 1 for i in range(len(right_order)) if right_order[i])
 
+dividers = [IntList([[2]]), IntList([[6]])]
+
+def part2(packets):
+    all_packets = [i for i, j in packets] + [j for i, j in packets] + dividers
+    sorted_packets = sorted(all_packets)
+    print(sorted_packets)
+    indices = sorted_packets.index(dividers[0]) + 1, sorted_packets.index(dividers[1]) + 1
+    print(indices)
+    return indices[0]*indices[1]
+
 print("Day 13")
 print("Part 1")
 print("Test input")
@@ -72,3 +82,8 @@ print(part1(test_packets))
 print("Puzzle input")
 packets = parse_input(input)
 print(part1(packets))
+print("Part 2")
+print("Test input")
+print(part2(test_packets))
+print("Puzzle input")
+print(part2(packets))
