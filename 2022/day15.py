@@ -19,6 +19,8 @@ input = open('day15_input').read()
 
 import re
 
+from sympy import Integers, Interval, Intersection, Range, Union
+
 SENSOR_LINE = re.compile(r'Sensor at x=(-?\d+), y=(-?\d+): closest beacon is at x=(-?\d+), y=(-?\d+)')
 
 def parse_input(data):
@@ -33,38 +35,31 @@ def parse_input(data):
 def manhattan(p1, p2):
     return abs(p1[0] - p2[0]) + abs(p1[1] - p2[1])
 
-def circle(p, r):
-    x, y = p
-    # we need all points i, j s.t. |i| + |j| = r
-    for i in range(-r, r+1):
-        for j in range(-r, r+1):
-            if abs(i) + abs(j) == r:
-                yield (x + i, y + j)
+def min_max_x(sensor, beacon, row):
+    x, y = sensor
+    dist = manhattan(sensor, beacon)
+    offset = (dist - abs(row - y))
+    return x - offset, x + offset
 
-def circle2(p, r, row):
-    x, y = p
-    if abs(y - row) > r:
-        return
-    yield (x + (r - row), row)
-    yield (x - (r - row), row)
-
-def get_positions(points, row):
-    area = {}
-
-    for sensor, beacon in points:
-        area[beacon] = 1
-        dist = manhattan(sensor, beacon)
-        print(dist)
-        for r in range(dist+1):
-            for p in circle2(sensor, r, row):
-                area.setdefault(p, 0)
-
-    return area
+def set_size(s):
+    # len(Union(Range)) doesn't work
+    if isinstance(s, Range):
+        return len(s)
+    elif isinstance(s, Union):
+        return sum(len(i) for i in s.args)
 
 def part1(points, row=2000000):
-    area = get_positions(points, row)
-    no_beacons = [(x, y) for (x, y) in area if y == row and area[x, y] == 0]
-    return len(no_beacons)
+    beacons_in_row = set()
+
+    interval = Union()
+    for sensor, beacon in points:
+        if beacon[1] == row:
+            beacons_in_row.add(beacon)
+        I = Interval(*min_max_x(sensor, beacon, row))
+        interval |= I
+    s = Intersection(Integers, interval)
+    return set_size(s) - len(beacons_in_row)
+
 
 print("Day 15")
 print("Part 1")
