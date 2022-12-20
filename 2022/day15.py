@@ -19,7 +19,7 @@ input = open('day15_input').read()
 
 import re
 
-from sympy import Integers, Interval, Intersection, Range, Union
+from sympy import Integers, Interval, Intersection, Range, Union, symbols, solve
 
 SENSOR_LINE = re.compile(r'Sensor at x=(-?\d+), y=(-?\d+): closest beacon is at x=(-?\d+), y=(-?\d+)')
 
@@ -90,7 +90,7 @@ def get_positions(points, row):
 
     return area
 
-def find_beacon(points, maxn):
+def find_beacon_old(points, maxn):
     for row in range(maxn):
         if row % 1000000 == 0:
             print(row)
@@ -102,6 +102,69 @@ def find_beacon(points, maxn):
     assert len(cols) == 1, cols
     col = cols.pop()
     return col, row
+
+
+def intersect_lines(p1, p2, d1, d2):
+    """
+    Yield the points where the 45 degree lines distance d1 from p1 and d2 from
+    p2 intersect.
+
+    Gives the nearest integer point if they don't intersect act an integer point.
+    """
+    x1, y1 = p1
+    x2, y2 = p2
+
+    d, x, y, x0, y0 = symbols('d x y x0 y0')
+    lines = [
+        d - x + x0 + y0,
+        d + x - x0 + y0,
+        d + x - x0 - y0,
+        d - x + x0 - y0]
+
+    for i in range(4):
+        for j in range(4):
+            l1 = lines[i].subs({d: d1, x0: x1, y0: y1})
+            l2 = lines[j].subs({d: d2, x0: x2, y0: y2})
+            sol = solve(l1 - l2, x)
+            if not sol:
+                continue
+            xval = sol[0]
+            yval = l1.subs(x, xval)
+
+            yield (int(xval), int(yval))
+
+def get_distances(points):
+    return {sensor: manhattan(sensor, beacon) for sensor, beacon in points}
+
+def nearby(p, k=2):
+    x, y = p
+    for i in range(-k, k+1):
+        for j in range(-k, k+1):
+            yield (x + i, y + j)
+
+def check_distances(p, distances):
+    for sensor, d in distances.items():
+        if manhattan(p, sensor) <= d:
+            return False
+    return True
+
+def find_beacon(points, maxn):
+    distances = get_distances(points)
+    n = len(points)
+    for i in range(n):
+        for j in range(i, n):
+            p1, p2 = points[i][0], points[j][0]
+            d1, d2 = distances[p1], distances[p2]
+            for intersection in intersect_lines(p1, p2, d1, d2):
+                # assert manhattan(intersection, p1) == d1, breakpoint()
+                # assert manhattan(intersection, p2) == d2
+                for p in nearby(intersection):
+                    x, y = p
+                    if not (0 <= x <= maxn) or not (0 <= y <= maxn):
+                        continue
+                    if check_distances(p, distances):
+                        return p
+    raise RuntimeError("Could not find point p")
 
 def part2(points, maxn=4000000):
     col, row = find_beacon(points, maxn)
