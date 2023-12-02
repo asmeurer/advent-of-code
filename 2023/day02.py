@@ -8,6 +8,8 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green
 
 puzzle_input = open("day02_input").read().strip()
 
+from math import prod
+
 def parse_input(input):
     for line in input.splitlines():
         game_id, game = line.split(":")
@@ -36,6 +38,18 @@ def part_1(games):
     print(good_games)
     return sum(good_games)
 
+def max_set(game):
+    res = {color: max(round.get(color, 0) for round in game) for color in bag}
+    return res
+
+def power_set(bag):
+    return prod(bag.values())
+
+def part2(games):
+    power_sets = [power_set(max_set(game)) for game_id, game in games]
+    print(power_sets)
+    return sum(power_sets)
+
 if __name__ == "__main__":
     print("Day 2")
     print("Part 1")
@@ -46,3 +60,8 @@ if __name__ == "__main__":
     print(part_1(test_games))
     print("Puzzle input")
     print(part_1(games))
+    print("Part 2")
+    print("Test input")
+    print(part2(test_games))
+    print("Puzzle input")
+    print(part2(games))
