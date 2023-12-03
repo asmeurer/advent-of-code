@@ -14,6 +14,7 @@ test_input = """
 puzzle_input = open("day03_input").read().strip()
 
 from dataclasses import dataclass
+from math import prod
 
 @dataclass
 class Number:
@@ -49,9 +50,7 @@ def get_numbers_symbols(puzzle):
 
     return numbers, symbols
 
-def part1(puzzle):
-    numbers, symbols = get_numbers_symbols(puzzle)
-
+def compute_adjacent(numbers, symbols):
     for s in symbols:
         x, y = s.coord
         for n in numbers:
@@ -61,8 +60,18 @@ def part1(puzzle):
                         n.adjacent.append(s)
                         s.adjacent.append(n)
                         break
+def part1(puzzle):
+    numbers, symbols = get_numbers_symbols(puzzle)
+    compute_adjacent(numbers, symbols)
 
     return sum(n.value for n in numbers if n.adjacent)
+
+def part2(puzzle):
+    numbers, symbols = get_numbers_symbols(puzzle)
+    compute_adjacent(numbers, symbols)
+    gears = [s for s in symbols if s.value == '*' and len(s.adjacent) == 2]
+    ratios = [prod(n.value for n in g.adjacent) for g in gears]
+    return sum(ratios)
 
 if __name__ == '__main__':
     print("Day 3")
@@ -71,3 +80,8 @@ if __name__ == '__main__':
     print(part1(test_input))
     print("Puzzle input")
     print(part1(puzzle_input))
+    print("Part 2")
+    print("Test input")
+    print(part2(test_input))
+    print("Puzzle input")
+    print(part2(puzzle_input))
