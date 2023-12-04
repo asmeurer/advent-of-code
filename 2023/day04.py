@@ -9,6 +9,8 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11
 
 puzzle_input = open("day04_input").read().strip()
 
+from collections import Counter
+
 def parse_input(input):
     cards = []
     for line in input.splitlines():
@@ -23,10 +25,22 @@ def parse_input(input):
 def part1(data):
     points = 0
     for winning_numbers, card_numbers in data:
-        matching_cards = set(card_numbers) & set(winning_numbers)
-        if matching_cards:
-            points += 2**(len(matching_cards)-1)
+        matching_numbers = set(card_numbers) & set(winning_numbers)
+        if matching_numbers:
+            points += 2**(len(matching_numbers)-1)
     return points
+
+def part2(data):
+    cards = Counter()
+    for i, (winning_numbers, card_numbers) in enumerate(data, 1):
+        cards[i] += 1
+        matching_numbers = set(card_numbers) & set(winning_numbers)
+        for j in range(1, len(matching_numbers)+1):
+            if i + j <= len(data):
+                cards[i + j] += cards[i]
+
+    # print(cards)
+    return cards.total()
 
 if __name__ == "__main__":
     print("Day 4")
@@ -37,3 +51,9 @@ if __name__ == "__main__":
     print("Puzzle input")
     puzzle_data = parse_input(puzzle_input)
     print(part1(puzzle_data))
+
+    print("Part 2")
+    print("Test input")
+    print(part2(test_data))
+    print("Puzzle input")
+    print(part2(puzzle_data))
