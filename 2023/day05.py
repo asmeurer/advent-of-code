@@ -117,6 +117,20 @@ def intersect_intervals(start1, end1, start2, end2):
         return None
     return (max(start1, start2), min(end1, end2))
 
+def insert_fake_mappings(almanac, map_name, max_val=100000000000):
+    mappings = getattr(almanac, map_name)
+
+    new_mappings = []
+    end = 0
+    for mapping in sorted(mappings, key=lambda m: m.destination):
+        length = mapping.destination - end
+        if length != 0:
+            new_mappings.append(MapRange(end, end, length))
+        new_mappings.append(mapping)
+        end = mapping.destination + mapping.length
+    new_mappings.append(MapRange(end, end, max_val - end))
+    setattr(almanac, map_name, new_mappings)
+
 def search_range(almanac, map_name, start, end):
     if map_name is None:
         for seed_range in almanac.seed_ranges:
@@ -124,8 +138,9 @@ def search_range(almanac, map_name, start, end):
             if intersection is not None:
                 yield intersection
         return
+
     mappings = getattr(almanac, map_name)
-    for mapping in sorted(mappings, key=lambda m: m.destination):
+    for mapping in mappings:
         dest_start, dest_end = mapping.destination, mapping.destination + mapping.length
         intersection = intersect_intervals(start, end, dest_start, dest_end)
         if intersection is None:
@@ -136,9 +151,18 @@ def search_range(almanac, map_name, start, end):
         yield from search_range(almanac, reverse_map[map_name], inverse_start, inverse_end)
 
 def part2(almanac):
-    for start, end in search_range(almanac, "humidity_to_location", 0, 100000000000):
-        print(start, end)
+    for map_name in reverse_map:
+        insert_fake_mappings(almanac, map_name)
 
+    # vals = []
+    # for start, end in search_range(almanac, "humidity_to_location", 0, 10000000000000):
+    #     vals.append(map_seed(start, almanac))
+    #     vals.append(map_seed(end, almanac))
+    #
+    # return min(vals)
+    start, end = next(search_range(almanac, "humidity_to_location", 0, 100000000000))
+    print(start, end)
+    return map_seed(start, almanac)
 
 if __name__ == "__main__":
     print("Day 5")
@@ -155,3 +179,5 @@ if __name__ == "__main__":
     print("Part 2")
     print("Test input")
     print(part2(test_almanac))
+    print("Puzzle input")
+    print(part2(almanac))
