@@ -12,6 +12,10 @@ def parse_input(input):
     distances = map(int, input.split("\n")[1].split(':')[1].split())
     return list(zip(times, distances))
 
+def parse_input2(input):
+    time = int(input.split("\n")[0].split(':')[1].replace(' ', ''))
+    distance = int(input.split("\n")[1].split(':')[1].replace(' ', ''))
+    return time, distance
 
 def race_distance(held_time, time):
     rate = held_time
@@ -21,7 +25,7 @@ def race_distance(held_time, time):
 def solve_race(time, distance):
     x = symbols('x')
     sol_set = reduce_inequalities(race_distance(x, time) > distance).as_set()
-    return set(sol_set.intersection(Integers))
+    return sol_set.intersection(Integers)
 
 def part1(races):
     solutions = []
@@ -32,6 +36,9 @@ def part1(races):
 
     return prod(map(len, solutions))
 
+def part2(time, distance):
+    return len(solve_race(time, distance))
+
 if __name__ == "__main__":
     print("Day 6")
     print("Part 1")
@@ -41,3 +48,11 @@ if __name__ == "__main__":
     print("Puzzle input")
     races = parse_input(puzzle_input)
     print(part1(races))
+
+    print("Part 2")
+    print("Test input")
+    test_time, test_distance = parse_input2(test_input)
+    print(part2(test_time, test_distance))
+    print("Puzzle input")
+    time, distance = parse_input2(puzzle_input)
+    print(part2(time, distance))
