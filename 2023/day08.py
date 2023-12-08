@@ -67,6 +67,7 @@ def part2(instructions, nodes):
                 steps += 1
                 curr = nodes[curr][inst]
         all_steps.append(steps)
+    print(all_steps)
     return ilcm(*all_steps)
 
 if __name__ == '__main__':
