@@ -153,9 +153,9 @@ def part2(puzzle, verbose=False):
     puzzle = np.where(loop, puzzle, '.')
     puzzle[tuple(start)] = start_tile_type(puzzle, start)
     # Ray casting: Cast a ray from a point to the left edge and count how many
-    # edges there are. Since the points align with the horizontal edges, we
-    # imagine they are shifted up slightly, so that they only intersect with
-    # |, J, and L.
+    # loop pipes there are. Since the points align with the horizontal loop
+    # pipes, we imagine they are shifted up slightly, so that the ray only
+    # intersects with |, J, and L.
     edges = np.array(['|', 'J', 'L'])
     ray_cast = np.cumsum(np.isin(puzzle, edges), axis=1)
     interior = (ray_cast % 2 == 1) & ~loop
