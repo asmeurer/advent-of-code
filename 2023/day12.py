@@ -60,18 +60,26 @@ def arrangements(springs, nums, prefix=''):
             yield from arrangements(springs[1:], [n] + nums[1:], prefix + '#')
 
 
-def part1(all_springs, verbose=True):
+def unfold(springs, nums, times=5):
+    return '?'.join(times*[springs]), times*nums
+
+def part1(all_springs, verbose=2):
     totals = []
-    for springs, nums in all_springs:
-        if verbose: print(f"Springs: {springs}, nums: {nums}")
+    for i, (springs, nums) in enumerate(all_springs):
+        if verbose: print(f"Springs ({i+1}/{len(all_springs)}): {springs}, nums: {nums}")
         n = 0
         for arrangement in arrangements(springs, nums):
             if arrangement is not None:
                 n += 1
-                if verbose: print(arrangement)
+                if verbose > 1: print(arrangement)
         if verbose: print(f"Total: {n}")
         totals.append(n)
     return sum(totals)
+
+def part2(all_springs, verbose=1):
+    unfolded_all_springs = [unfold(springs, nums) for springs, nums in
+                            all_springs]
+    return part1(unfolded_all_springs, verbose=verbose)
 
 if __name__ == '__main__':
     print("Day 12")
@@ -85,3 +93,8 @@ if __name__ == '__main__':
     print("Puzzle input")
     puzzle_all_springs = parse_input(puzzle_input)
     print(part1(puzzle_all_springs, verbose=False))
+    print("Part 2")
+    print("Test input")
+    print(part2(test_all_springs))
+    print("Puzzle input")
+    print(part2(puzzle_all_springs))
