@@ -16,49 +16,48 @@ test_input_no_wildcards = """
 .###.##....# 3,2,1
 """.strip()
 
+from functools import lru_cache
+
 puzzle_input = open('day12_input').read().strip()
 
 def parse_input(input):
     all_springs = []
     for line in input.splitlines():
         springs, nums = line.split()
-        nums = [int(n) for n in nums.split(',')]
+        nums = tuple([int(n) for n in nums.split(',')])
         all_springs.append((springs, nums))
     return all_springs
 
-def arrangements(springs, nums, prefix=''):
+@lru_cache(maxsize=None)
+def arrangements(springs, nums, prev=''):
     if not nums:
         if '#' in springs:
-            yield None
-            return
-        yield prefix + springs.replace('?', '.')
-        return
+            return 0
+        return 1
     if not springs:
-        if nums not in ([], [0]):
-            yield None
+        if nums not in ((), (0,)):
+            return 0
         else:
-            yield prefix
-        return
+            return 1
     n = nums[0]
     c = springs[0]
+    total = 0
     if n == 0:
         if c == '#':
-            yield None
-            return
+            return 0
         else:
-            yield from arrangements(springs[1:], nums[1:], prefix + '.')
+            total += arrangements(springs[1:], nums[1:], '.')
     else:
         if c == '.':
-            if prefix[-1:] == '#':
-                yield None
-                return
-            yield from arrangements(springs[1:], nums, prefix + '.')
+            if prev == '#':
+                return 0
+            total += arrangements(springs[1:], nums, '.')
         else:
-            if c == '?' and prefix[-1:] != '#':
-                yield from arrangements(springs[1:], nums, prefix + '.')
+            if c == '?' and prev != '#':
+                total += arrangements(springs[1:], nums, '.')
             n -= 1
-            yield from arrangements(springs[1:], [n] + nums[1:], prefix + '#')
-
+            total += arrangements(springs[1:], (n,) + nums[1:], '#')
+    return total
 
 def unfold(springs, nums, times=5):
     return '?'.join(times*[springs]), times*nums
@@ -68,10 +67,7 @@ def part1(all_springs, verbose=2):
     for i, (springs, nums) in enumerate(all_springs):
         if verbose: print(f"Springs ({i+1}/{len(all_springs)}): {springs}, nums: {nums}")
         n = 0
-        for arrangement in arrangements(springs, nums):
-            if arrangement is not None:
-                n += 1
-                if verbose > 1: print(arrangement)
+        n = arrangements(springs, nums)
         if verbose: print(f"Total: {n}")
         totals.append(n)
     return sum(totals)
