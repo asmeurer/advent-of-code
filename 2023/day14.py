@@ -46,7 +46,7 @@ def print_grid(grid):
 
 @njit
 def tilt(grid):
-    # grid = grid.copy()
+    grid = grid.copy()
     for x in range(grid.shape[0]):
         for y in range(grid.shape[1]):
             c = grid[x, y]
@@ -57,6 +57,7 @@ def tilt(grid):
                 grid[x, y] = 0
                 grid[i+1, y] = 2
     return grid
+
 
 @njit
 def spin(grid):
@@ -73,13 +74,28 @@ def part1(grid):
     # print_grid(tilted_grid)
     return load(tilted_grid)
 
-@njit
+# @njit
 def part2(grid, n):
-    for i in range(n):
+    seen = {}
+    for i in range(1, n+1):
         if i % 1000000 == 0:
             print(i, '/', n, "(", i/n*100, "% )")
             # print(f"{i} / {n} ({i/n:.2%})")
+
         grid = spin(grid)
+
+        key = grid.tobytes()
+        if key in seen:
+            k = i - seen[key]
+            print(f"Found cycle at {i = }, cycle length {k = }")
+            break
+        seen[key] = i
+
+    loops = (n - i) % k
+    print(loops, "loops left")
+    for j in range(loops):
+        grid = spin(grid)
+
     return load(grid)
 
 ncycles = 1000000000
@@ -101,6 +117,6 @@ if __name__ == '__main__':
     print_grid(spin(test_grid))
     print_grid(spin(spin(test_grid)))
     print_grid(spin(spin(spin(test_grid))))
-    # print(part2(test_grid, ncycles))
+    print(part2(test_grid, ncycles))
     print("Puzzle input")
     print(part2(puzzle_grid, ncycles))
