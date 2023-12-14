@@ -28,6 +28,8 @@ puzzle_input = open('day14_input').read().strip()
 
 import numpy as np
 
+from numba import njit
+
 vals = {
     '.': 0,
     '#' : 1,
@@ -42,8 +44,9 @@ def print_grid(grid):
         print(''.join(['.#O'[c] for c in row]))
     print()
 
+@njit
 def tilt(grid):
-    grid = grid.copy()
+    # grid = grid.copy()
     for x in range(grid.shape[0]):
         for y in range(grid.shape[1]):
             c = grid[x, y]
@@ -55,6 +58,13 @@ def tilt(grid):
                 grid[i+1, y] = 2
     return grid
 
+@njit
+def spin(grid):
+    for i in range(4):
+        grid = tilt(grid)[::-1].T
+    return grid
+
+@njit
 def load(grid):
     return np.sum(np.arange(grid.shape[0], 0, -1)[:, None] * (grid == 2))
 
@@ -62,6 +72,17 @@ def part1(grid):
     tilted_grid = tilt(grid)
     # print_grid(tilted_grid)
     return load(tilted_grid)
+
+@njit
+def part2(grid, n):
+    for i in range(n):
+        if i % 1000000 == 0:
+            print(i, '/', n, "(", i/n*100, "% )")
+            # print(f"{i} / {n} ({i/n:.2%})")
+        grid = spin(grid)
+    return load(grid)
+
+ncycles = 1000000000
 
 if __name__ == '__main__':
     print("Day 14")
@@ -75,3 +96,11 @@ if __name__ == '__main__':
     print("Puzzle input")
     puzzle_grid = parse_input(puzzle_input)
     print(part1(puzzle_grid))
+    print("Part 2")
+    print("Test input")
+    print_grid(spin(test_grid))
+    print_grid(spin(spin(test_grid)))
+    print_grid(spin(spin(spin(test_grid))))
+    # print(part2(test_grid, ncycles))
+    print("Puzzle input")
+    print(part2(puzzle_grid, ncycles))
