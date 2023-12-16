@@ -102,6 +102,36 @@ def part1(grid, verbose=True):
         print_energized(energized)
     return np.sum(energized != 0)
 
+def get_energy(grid, x, y, dx, dy, verbose=False):
+    energized = np.zeros_like(grid, dtype=int)
+    shine_beam(grid, energized, x, y, dx, dy)
+    if verbose:
+        print_energized(energized)
+    return np.sum(energized != 0)
+
+def part2(grid):
+    energies = []
+
+    dy = 0
+    for y in range(grid.shape[0]):
+        x, dx = -1, 1
+        energy = get_energy(grid, x, y, dx, dy)
+        energies.append(energy)
+        x, dx = grid.shape[1], -1
+        energy = get_energy(grid, x, y, dx, dy)
+        energies.append(energy)
+
+    dx = 0
+    for x in range(grid.shape[1]):
+        y, dy = -1, 1
+        energy = get_energy(grid, x, y, dx, dy)
+        energies.append(energy)
+        y, dy = grid.shape[0], -1
+        energy = get_energy(grid, x, y, dx, dy)
+        energies.append(energy)
+
+    return max(energies)
+
 if __name__ == '__main__':
     print("Day 16")
     print("Part 1")
@@ -113,3 +143,9 @@ if __name__ == '__main__':
     print("Puzzle input")
     puzzle_grid = parse_input(puzzle_input)
     print(part1(puzzle_grid, verbose=False))
+
+    print("Part 2")
+    print("Test input")
+    print(part2(test_grid))
+    print("Puzzle input")
+    print(part2(puzzle_grid))
