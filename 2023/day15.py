@@ -10,7 +10,7 @@ def parse_input(input):
     return input.split(',')
 
 def hash(x):
-    a = np.array([ord(c) for c in x] + [0], dtype=np.uint16)
+    a = np.array([ord(c) for c in x] + [0], dtype=np.uint8)
     return np.polyval(a, 17) % 256
 
 def part1(strings):
