@@ -46,16 +46,16 @@ def get_neighbors(node, map, path):
     if y == map.shape[1]-1:
         plusy = False
 
-    # # Don't allow the path to go back on itself
-    # if len(path) >= 2:
-    #     if path[-2][0] == path[-1][0] - 1:
-    #         minusx = False
-    #     if path[-2][0] == path[-1][0] + 1:
-    #         plusx = False
-    #     if path[-2][1] == path[-1][1] - 1:
-    #         minusy = False
-    #     if path[-2][1] == path[-1][1] + 1:
-    #         plusy = False
+    # Don't allow the path to go back on itself
+    if len(path) >= 2:
+        if path[-2][0] == path[-1][0] - 1:
+            minusx = False
+        if path[-2][0] == path[-1][0] + 1:
+            plusx = False
+        if path[-2][1] == path[-1][1] - 1:
+            minusy = False
+        if path[-2][1] == path[-1][1] + 1:
+            plusy = False
 
     if plusx:
         yield (x+1, y)
@@ -65,6 +65,37 @@ def get_neighbors(node, map, path):
         yield (x-1, y)
     if minusy:
         yield (x, y-1)
+
+def dfs(start, end, map):
+    # I'm not sure if we can necessarily rule out the same cell being visited
+    # twice because of the three in a row rule, so start with a min cost of a
+    # simple (valid) path
+    min_cost = np.sum(np.diagonal(map)) + np.sum(np.diagonal(map, 1)) - map[0, 0]
+
+    def _dfs(node, path):
+        # print_path(map, path)
+        cost = sum(map[i] for i in path) + map[node]
+        if node == end:
+            nonlocal min_cost
+            if cost < min_cost:
+                print('Found path with cost', cost)
+                print_path(map, path + [node])
+            min_cost = min(min_cost, cost)
+            return
+        if cost > min_cost:
+            # print('Pruning')
+            # print_path(map, path)
+            return
+        path.append(node)
+        for neighbor in sorted(get_neighbors(node, map, path), key=map.__getitem__):
+            _dfs(neighbor, path)
+        path.pop()
+
+    path = []
+    _dfs(start, path)
+
+    print_path(map, path)
+    return min_cost
 
 # Taken from 2021/day15
 def astar(start, end, map):
@@ -133,7 +164,7 @@ def part1(map):
     x, y = map.shape
     start = (0, 0)
     end = (x-1, y-1)
-    path = astar(start, end, map)
+    path = dfs(start, end, map)
     print_path(map, path)
     return sum(map[i] for i in path[1:])
 
@@ -142,4 +173,7 @@ if __name__ == '__main__':
     print("Part 1")
     print("Test input")
     test_map = parse_input(test_input)
-    print(part1(test_map))
+    # print(part1(test_map))
+    print("Puzzle input")
+    puzzle_map = parse_input(puzzle_input)
+    print(part1(puzzle_map))
